@@ -149,11 +149,11 @@
     .m-team-bio { font-size:.8rem; color:var(--muted); line-height:1.6; }
 
     /* ── COURSE CARDS (horizontal scroll) ── */
-    .course-scroll { display:flex; gap:12px; overflow-x:auto; padding:0 1.25rem 1rem; margin:0 -1.25rem; scrollbar-width:none; scroll-snap-type:x mandatory; }
+    .course-scroll { display:flex; gap:12px; overflow-x:auto; padding:0 1.25rem 1rem; margin:0 -1.25rem; scrollbar-width:none; }
     .course-scroll::-webkit-scrollbar { display:none; }
     .m-course {
       flex-shrink:0; width:260px; background:rgba(8,24,40,.7); border:1px solid var(--border);
-      display:flex; flex-direction:column; overflow:hidden; scroll-snap-align:start;
+      display:flex; flex-direction:column; overflow:hidden;
       transition:border-color .2s;
     }
     .m-course:active { border-color:var(--bh); }
@@ -180,9 +180,21 @@
     .m-tab.on { color:var(--cyan); border-bottom-color:var(--cyan); background:rgba(27,200,188,.06); }
     .site-panel { display:none; }
     .site-panel.on { display:block; }
-    .site-photo-strip { display:flex; gap:3px; overflow-x:auto; scrollbar-width:none; margin-bottom:2px; scroll-snap-type:x mandatory; }
+    .site-photo-strip { display:none; gap:3px; overflow-x:auto; scrollbar-width:none; margin-bottom:8px; scroll-snap-type:x mandatory; }
     .site-photo-strip::-webkit-scrollbar { display:none; }
-    .site-photo-strip img { flex-shrink:0; width:180px; height:115px; object-fit:cover; scroll-snap-align:start; }
+    .site-photo-strip.active { display:flex; }
+    .site-photo-strip img { flex-shrink:0; width:180px; height:115px; object-fit:cover; scroll-snap-align:start; opacity:0; }
+    .site-photo-strip.active img { animation: photoRollInM .45s ease both; }
+    .site-photo-strip.active img:nth-child(1) { animation-delay:.00s; }
+    .site-photo-strip.active img:nth-child(2) { animation-delay:.07s; }
+    .site-photo-strip.active img:nth-child(3) { animation-delay:.14s; }
+    .site-photo-strip.active img:nth-child(4) { animation-delay:.21s; }
+    .site-photo-strip.active img:nth-child(5) { animation-delay:.28s; }
+    .site-photo-strip.active img:nth-child(6) { animation-delay:.35s; }
+    @keyframes photoRollInM {
+      from { opacity:0; transform:translateY(-18px) scaleY(.86); }
+      to   { opacity:1; transform:translateY(0) scaleY(1); }
+    }
     .m-site-list { display:flex; flex-direction:column; gap:2px; }
     .m-site { padding:1rem 1.1rem; background:rgba(8,24,40,.55); border:1px solid var(--border); display:flex; gap:.8rem; align-items:baseline; }
     .m-site-no { font-size:.58rem; letter-spacing:.1em; color:var(--cyan); opacity:.5; flex-shrink:0; }
@@ -321,6 +333,7 @@
 <!-- ── TOP HEADER ── -->
 <header id="hdr">
   <a class="hdr-logo" href="#hero">Sea<b>Urchin</b></a>
+  <a href="weather.html" class="hdr-desktop">Weather</a>
 </header>
 
 <!-- ═══ HERO ═══ -->
@@ -468,6 +481,34 @@
   <p class="sec-label fade">Mauritius Waters</p>
   <h2 class="sec-h2 display fade">25+ sites,<br>15 minutes away</h2>
   <p class="fade" style="color:var(--muted);font-size:.84rem;margin-bottom:1.5rem">Volcanic arches, coral gardens, wrecks, and deep walls off Flic en Flac.</p>
+  <div class="site-photo-strip active" id="mstrip-caves">
+    <img src="images/DSC_9361-e1544972452649-1024x685.jpg" alt="Cave" loading="lazy">
+    <img src="images/DSC_8073-e1544972173219-1024x682.jpg" alt="Arch" loading="lazy">
+    <img src="images/blau-fische-schmal-1024x683.jpg" alt="Fish" loading="lazy">
+    <img src="images/DSC_7938-1024x683.jpg" alt="Dive" loading="lazy">
+  </div>
+  <div class="site-photo-strip" id="mstrip-reef">
+    <img src="images/Clownfish-Anemonen-Fish-Mauritius-SeaUrchin_DC.jpg" alt="Clownfish" loading="lazy">
+    <img src="images/Frogfish-Mauritius-SeaUrchin_DC.jpg" alt="Frogfish" loading="lazy">
+    <img src="images/Moray-Mauritius-SeaUrchin_DC.jpg" alt="Moray" loading="lazy">
+    <img src="images/Nudi-Mauritius-SeaUrchin_DC.jpg" alt="Nudibranch" loading="lazy">
+    <img src="images/Triggerfish-Dropoff-Mauritius-SeaUrchin_DC.jpg" alt="Triggerfish" loading="lazy">
+    <img src="images/Pufferfish-Mauritius-SeaUrchin_DC.jpg" alt="Pufferfish" loading="lazy">
+  </div>
+  <div class="site-photo-strip" id="mstrip-wrecks">
+    <img src="images/Shipwreck-TUG-II-Mauritius-SeaUrchin_DC.jpg" alt="TUG II" loading="lazy">
+    <img src="images/mii-TianXiang-45mt-1024x683.jpg" alt="Tian Xiang" loading="lazy">
+    <img src="images/Lionfish-on-TUG-II-Mauritius-SeaUrchin_DC.jpg" alt="Lionfish" loading="lazy">
+    <img src="images/Pufferfish-resting-Wreck-Mauritius-SeaUrchin_DC.jpg" alt="Pufferfish" loading="lazy">
+  </div>
+  <div class="site-photo-strip" id="mstrip-deep">
+    <img src="images/rays-1024x683.jpg" alt="Rays" loading="lazy">
+    <img src="images/adlerrochen.jpg" alt="Eagle ray" loading="lazy">
+    <img src="images/Green-Turtle-with-Perrine-Mauritius-SeaUrchin_Dc.jpg" alt="Turtle" loading="lazy">
+    <img src="images/Bottlenose-Dolphin-Mauritius-SeaUrchin_DC.jpg" alt="Dolphin" loading="lazy">
+    <img src="images/Schwarm-SteilwandDSC_11747.jpg" alt="Wall" loading="lazy">
+  </div>
+
   <div class="site-tabs" id="siteTabs">
     <button class="m-tab on" onclick="switchSite('caves',this)">Caves</button>
     <button class="m-tab" onclick="switchSite('reef',this)">Reef</button>
@@ -476,12 +517,6 @@
   </div>
 
   <div id="m-caves" class="site-panel on">
-    <div class="site-photo-strip" style="margin-bottom:8px">
-      <img src="images/DSC_9361-e1544972452649-1024x685.jpg" alt="Cave" loading="lazy">
-      <img src="images/DSC_8073-e1544972173219-1024x682.jpg" alt="Arch" loading="lazy">
-      <img src="images/blau-fische-schmal-1024x683.jpg" alt="Fish" loading="lazy">
-      <img src="images/DSC_7938-1024x683.jpg" alt="Dive" loading="lazy">
-    </div>
     <div class="m-site-list">
       <div class="m-site"><div class="m-site-no">01</div><div><div class="m-site-depth">Max 28m</div><h4>Cathedral</h4><p>Caves and drop-off formations — one of the signature dives of Flic en Flac.</p></div></div>
       <div class="m-site"><div class="m-site-no">02</div><div><div class="m-site-depth">Max 23m</div><h4>Swiss Drop</h4><p>Accessible neighbour of Cathedral with equally dramatic formations.</p></div></div>
@@ -491,14 +526,6 @@
   </div>
 
   <div id="m-reef" class="site-panel">
-    <div class="site-photo-strip" style="margin-bottom:8px">
-      <img src="images/Clownfish-Anemonen-Fish-Mauritius-SeaUrchin_DC.jpg" alt="Clownfish" loading="lazy">
-      <img src="images/Frogfish-Mauritius-SeaUrchin_DC.jpg" alt="Frogfish" loading="lazy">
-      <img src="images/Moray-Mauritius-SeaUrchin_DC.jpg" alt="Moray" loading="lazy">
-      <img src="images/Nudi-Mauritius-SeaUrchin_DC.jpg" alt="Nudibranch" loading="lazy">
-      <img src="images/Triggerfish-Dropoff-Mauritius-SeaUrchin_DC.jpg" alt="Triggerfish" loading="lazy">
-      <img src="images/Pufferfish-Mauritius-SeaUrchin_DC.jpg" alt="Pufferfish" loading="lazy">
-    </div>
     <div class="m-site-list">
       <div class="m-site"><div class="m-site-no">01</div><div><div class="m-site-depth">5–20m</div><h4>Aquarium</h4><p>Beginner-friendly reef teeming with colourful fish.</p></div></div>
       <div class="m-site"><div class="m-site-no">02</div><div><div class="m-site-depth">Max 25m</div><h4>Snake Reef</h4><p>Lionfish, moray eels, and exceptional macro subjects.</p></div></div>
@@ -508,12 +535,6 @@
   </div>
 
   <div id="m-wrecks" class="site-panel">
-    <div class="site-photo-strip" style="margin-bottom:8px">
-      <img src="images/Shipwreck-TUG-II-Mauritius-SeaUrchin_DC.jpg" alt="TUG II" loading="lazy">
-      <img src="images/mii-TianXiang-45mt-1024x683.jpg" alt="Tian Xiang" loading="lazy">
-      <img src="images/Lionfish-on-TUG-II-Mauritius-SeaUrchin_DC.jpg" alt="Lionfish" loading="lazy">
-      <img src="images/Pufferfish-resting-Wreck-Mauritius-SeaUrchin_DC.jpg" alt="Pufferfish" loading="lazy">
-    </div>
     <div class="m-site-list">
       <div class="m-site"><div class="m-site-no">01</div><div><div class="m-site-depth">18m · Beginner</div><h4>TUG II</h4><p>Small tug resting in a sandy bay — a welcoming first wreck.</p></div></div>
       <div class="m-site"><div class="m-site-no">02</div><div><div class="m-site-depth">Max 45m</div><h4>Tian Xiang</h4><p>Larger cargo vessel, multiple sections to explore at different depths.</p></div></div>
@@ -522,13 +543,6 @@
   </div>
 
   <div id="m-deep" class="site-panel">
-    <div class="site-photo-strip" style="margin-bottom:8px">
-      <img src="images/rays-1024x683.jpg" alt="Rays" loading="lazy">
-      <img src="images/adlerrochen.jpg" alt="Eagle ray" loading="lazy">
-      <img src="images/Green-Turtle-with-Perrine-Mauritius-SeaUrchin_Dc.jpg" alt="Turtle" loading="lazy">
-      <img src="images/Bottlenose-Dolphin-Mauritius-SeaUrchin_DC.jpg" alt="Dolphin" loading="lazy">
-      <img src="images/Schwarm-SteilwandDSC_11747.jpg" alt="Wall" loading="lazy">
-    </div>
     <div class="m-site-list">
       <div class="m-site"><div class="m-site-no">01</div><div><div class="m-site-depth">45–60m · Advanced</div><h4>Park, Manioc &amp; Black Forrest</h4><p>Remote deep sites. Specialist certifications essential.</p></div></div>
       <div class="m-site"><div class="m-site-no">02</div><div><div class="m-site-depth">Max 40m</div><h4>Eel Garden</h4><p>Sandy bottom with garden eels and macro life; popular for photography.</p></div></div>
@@ -822,6 +836,9 @@ function switchSite(id, btn) {
   document.querySelectorAll('.m-tab').forEach(b => b.classList.remove('on'));
   document.getElementById('m-' + id).classList.add('on');
   btn.classList.add('on');
+  document.querySelectorAll('.site-photo-strip').forEach(s => s.classList.remove('active'));
+  const strip = document.getElementById('mstrip-' + id);
+  if (strip) { strip.classList.remove('active'); void strip.offsetWidth; strip.classList.add('active'); }
 }
 
 /* ── Price tabs ── */

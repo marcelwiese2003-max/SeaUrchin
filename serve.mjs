@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { createServer }           from 'http';
 import { readFile, writeFile }     from 'fs/promises';
 import { extname, join }           from 'path';
