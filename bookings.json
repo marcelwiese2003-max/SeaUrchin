@@ -1,0 +1,18 @@
+[
+  {
+    "id": "663d465ee33ab5f07a313bd343274bcc",
+    "acceptToken": "756371446571ee14b4b883553ac59b7b767ac320ddeb1ceb",
+    "declineToken": "d564aabb524de8e02f6e2d173e2f2d9defffad114c6e1e91",
+    "status": "pending",
+    "createdAt": "2026-04-28T17:00:32.898Z",
+    "name": "Marcel Test",
+    "email": "marcel.wiese2003@gmail.com",
+    "phone": "+230 5850 9487",
+    "service": "Trial Dive / Discover Scuba",
+    "date": "Wednesday 30 April 2025",
+    "time": "08:00",
+    "people": 2,
+    "experience": "No experience — complete beginner",
+    "notes": "Test booking — please ignore"
+  }
+]

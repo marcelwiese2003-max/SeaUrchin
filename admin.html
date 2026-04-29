@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SeaUrchin — Blog Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  <style>
+    :root {
+      --deep:     #050f1a;
+      --ocean:    #0b2035;
+      --mid:      #0e3350;
+      --teal:     #0a7a72;
+      --cyan:     #1bc8bc;
+      --sand:     #c4924f;
+      --cream:    #f0ebe3;
+      --text:     #c8c4be;
+      --muted:    #6a7a86;
+      --border:   rgba(27,200,188,.09);
+      --border-h: rgba(27,200,188,.26);
+      --red:      #e05252;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { background: var(--deep); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; line-height: 1.6; overflow: hidden; }
+
+    /* ── Login ── */
+    #loginScreen {
+      position: fixed; inset: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--deep);
+    }
+    .login-box { width: 100%; max-width: 360px; padding: 3rem; border: 1px solid var(--border-h); background: rgba(11,32,53,.4); }
+    .login-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; letter-spacing: .12em; text-transform: uppercase; color: var(--cream); }
+    .login-logo b { color: var(--cyan); font-weight: 400; }
+    .login-sub { font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: .4rem 0 2.5rem; }
+    .f-label { display: block; font-size: .66rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-bottom: .4rem; }
+    .f-input {
+      width: 100%; padding: .75rem 1rem; margin-bottom: 1.2rem;
+      background: rgba(5,15,26,.8); border: 1px solid var(--border);
+      color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: .9rem;
+      outline: none; transition: border-color .2s;
+    }
+    .f-input:focus { border-color: var(--border-h); }
+    .f-select { appearance: none; cursor: pointer; }
+    .login-err { color: var(--red); font-size: .8rem; margin-top: .8rem; display: none; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+      padding: .75rem 1.5rem; font-family: 'DM Sans', sans-serif;
+      font-size: .72rem; letter-spacing: .13em; text-transform: uppercase;
+      cursor: pointer; transition: .22s; border: none; outline: none; white-space: nowrap;
+    }
+    .btn-full { width: 100%; }
+    .btn-cyan { background: var(--cyan); color: var(--deep); font-weight: 500; }
+    .btn-cyan:hover { background: #3de0d4; }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-ghost:hover { border-color: var(--border-h); color: var(--cream); }
+    .btn-red { background: rgba(224,82,82,.12); border: 1px solid rgba(224,82,82,.28); color: var(--red); }
+    .btn-red:hover { background: rgba(224,82,82,.22); }
+    .btn-sm { padding: .45rem 1rem; font-size: .68rem; }
+
+    /* ── Admin layout ── */
+    #adminPanel { display: none; height: 100vh; flex-direction: column; }
+    #adminPanel.on { display: flex; }
+
+    .adm-header {
+      height: 54px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.4rem;
+      background: rgba(8,24,40,.98); border-bottom: 1px solid var(--border);
+    }
+    .adm-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; letter-spacing: .1em; text-transform: uppercase; color: var(--cream); text-decoration: none; }
+    .adm-logo b { color: var(--cyan); font-weight: 400; }
+    .adm-logo-badge { font-size: .62rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-left: .7rem; }
+    .adm-hdr-r { display: flex; align-items: center; gap: 1.2rem; }
+    .adm-hdr-r a { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
+    .adm-hdr-r a:hover { color: var(--cream); }
+    .adm-sep { width: 1px; height: 18px; background: var(--border); }
+    #postCount { font-size: .7rem; color: var(--muted); }
+
+    .adm-body { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 270px; flex-shrink: 0;
+      display: flex; flex-direction: column;
+      border-right: 1px solid var(--border);
+      background: rgba(8,24,40,.55);
+    }
+    .sb-top { padding: .9rem; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: .6rem; }
+    .sb-search {
+      width: 100%; padding: .5rem .85rem;
+      background: rgba(5,15,26,.7); border: 1px solid var(--border);
+      color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: .82rem;
+      outline: none; transition: border-color .2s;
+    }
+    .sb-search:focus { border-color: var(--border-h); }
+    .sb-search::placeholder { color: var(--muted); }
+
+    .post-list { overflow-y: auto; flex: 1; }
+    .post-list::-webkit-scrollbar { width: 3px; }
+    .post-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .pi {
+      padding: .85rem 1rem; cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      border-left: 2px solid transparent;
+      transition: background .18s, border-left-color .18s;
+    }
+    .pi:hover { background: rgba(27,200,188,.04); }
+    .pi.active { background: rgba(27,200,188,.07); border-left-color: var(--cyan); }
+    .pi-title { font-size: .86rem; color: var(--cream); margin-bottom: .22rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+    .pi-meta { display: flex; align-items: center; gap: .45rem; font-size: .68rem; color: var(--muted); }
+    .pi-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .pi-dot.pub { background: var(--cyan); }
+    .pi-dot.dft { background: var(--muted); }
+    .pi-status { font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; }
+    .pi-status.pub { color: var(--cyan); }
+    .pi-status.dft { color: var(--muted); }
+    .sb-empty { padding: 2rem 1rem; text-align: center; color: var(--muted); font-size: .82rem; }
+
+    /* ── Editor area ── */
+    .ed-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+    .ed-toolbar {
+      padding: .6rem 1.2rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: .35rem; flex-wrap: wrap;
+      background: rgba(8,24,40,.45); flex-shrink: 0;
+    }
+    .tb {
+      padding: .3rem .55rem; background: transparent; border: 1px solid var(--border);
+      color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: .76rem;
+      cursor: pointer; font-weight: 500; letter-spacing: .03em; line-height: 1;
+      transition: background .18s, color .18s, border-color .18s;
+    }
+    .tb:hover { background: rgba(27,200,188,.08); border-color: var(--border-h); color: var(--cyan); }
+    .tb-sep { width: 1px; height: 18px; background: var(--border); margin: 0 .15rem; flex-shrink: 0; }
+    .tb-tabs { margin-left: auto; display: flex; gap: 2px; }
+    .tb-tab {
+      padding: .3rem .85rem; background: transparent; border: 1px solid var(--border);
+      color: var(--muted); font-family: 'DM Sans', sans-serif;
+      font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; transition: .18s;
+    }
+    .tb-tab.on { background: rgba(27,200,188,.1); border-color: rgba(27,200,188,.35); color: var(--cyan); }
+
+    .ed-fields {
+      padding: .9rem 1.4rem; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 1fr 170px 150px; gap: .7rem; align-items: end;
+      background: rgba(8,24,40,.25); flex-shrink: 0;
+    }
+    .ef { }
+    .ef label { display: block; font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: .3rem; }
+    .ef input, .ef select {
+      width: 100%; padding: .55rem .85rem;
+      background: rgba(5,15,26,.8); border: 1px solid var(--border);
+      color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: .86rem;
+      outline: none; transition: border-color .2s; appearance: none;
+    }
+    .ef input:focus, .ef select:focus { border-color: var(--border-h); }
+    .ef select option { background: #0b2035; }
+
+    .ed-excerpt {
+      padding: .6rem 1.4rem; border-bottom: 1px solid var(--border);
+      background: rgba(8,24,40,.22); flex-shrink: 0;
+    }
+    .ed-excerpt label { font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: .3rem; }
+    .ed-excerpt input {
+      width: 100%; padding: .55rem .85rem;
+      background: rgba(5,15,26,.8); border: 1px solid var(--border);
+      color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: .86rem;
+      outline: none; transition: border-color .2s;
+    }
+    .ed-excerpt input:focus { border-color: var(--border-h); }
+
+    .ed-body { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+
+    #mdEditor {
+      flex: 1; width: 100%; resize: none; border: none; outline: none;
+      background: rgba(5,15,26,.55); color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: .88rem; line-height: 1.8;
+      padding: 1.4rem 1.6rem; tab-size: 2;
+    }
+    #mdEditor::placeholder { color: var(--muted); }
+
+    #previewPane {
+      flex: 1; overflow-y: auto; padding: 1.8rem 2.8rem;
+      background: rgba(5,15,26,.55); display: none;
+    }
+    #previewPane.on { display: block; }
+    #previewPane::-webkit-scrollbar { width: 4px; }
+    #previewPane::-webkit-scrollbar-thumb { background: var(--border); }
+
+    /* Preview styles matching post modal */
+    .prev h2 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 1.75rem; color: var(--cream); margin: 1.6rem 0 .7rem; line-height: 1.2; }
+    .prev h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--cream); margin: 1.3rem 0 .5rem; }
+    .prev p { color: var(--text); margin-bottom: 1.1rem; line-height: 1.85; }
+    .prev strong { color: var(--cream); font-weight: 500; }
+    .prev em { color: var(--cyan); font-style: italic; }
+    .prev ul, .prev ol { padding-left: 1.4rem; margin-bottom: 1.2rem; }
+    .prev li { color: var(--text); margin-bottom: .4rem; line-height: 1.7; }
+    .prev blockquote { border-left: 2px solid var(--cyan); padding: .15rem 0 .15rem 1.2rem; margin: 1.5rem 0; color: var(--muted); font-style: italic; }
+    .prev hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+    .prev a { color: var(--cyan); }
+    .prev code { background: rgba(27,200,188,.08); color: var(--cyan); padding: .1rem .35rem; font-size: .85em; }
+    .prev pre { background: rgba(5,15,26,.8); border: 1px solid var(--border); padding: 1.2rem; margin-bottom: 1.2rem; overflow-x: auto; }
+    .prev pre code { background: none; padding: 0; color: var(--text); }
+
+    .ed-footer {
+      padding: .8rem 1.4rem; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: .8rem; flex-shrink: 0;
+      background: rgba(8,24,40,.6); flex-wrap: wrap;
+    }
+    .toggle-row { display: flex; align-items: center; gap: .55rem; cursor: pointer; user-select: none; }
+    .toggle-row span { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+    .sw { width: 32px; height: 17px; background: rgba(106,122,134,.3); border-radius: 9px; position: relative; transition: background .25s; flex-shrink: 0; }
+    .sw.on { background: var(--teal); }
+    .sw::after { content:''; position:absolute; top:3px; left:3px; width:11px; height:11px; border-radius:50%; background: var(--cream); transition: transform .25s; }
+    .sw.on::after { transform: translateX(15px); }
+    .save-ind { font-size: .7rem; color: var(--muted); letter-spacing: .06em; margin-left: .4rem; transition: color .3s; }
+    .save-ind.ok { color: var(--cyan); }
+    .ed-footer-r { margin-left: auto; display: flex; gap: .6rem; align-items: center; }
+
+    /* ── Empty state ── */
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted); gap: 1rem; text-align: center; padding: 2rem; }
+    .empty-state h3 { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; color: var(--text); }
+    .empty-state p { font-size: .88rem; max-width: 280px; line-height: 1.7; }
+
+    /* ── Confirm overlay ── */
+    .overlay { position: fixed; inset: 0; z-index: 300; background: rgba(5,15,26,.88); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; padding: 1rem; }
+    .overlay.on { display: flex; }
+    .overlay-box { max-width: 340px; width: 100%; padding: 2.5rem; background: var(--ocean); border: 1px solid var(--border-h); }
+    .overlay-box h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; color: var(--cream); margin-bottom: .5rem; }
+    .overlay-box p { color: var(--muted); font-size: .86rem; margin-bottom: 1.8rem; line-height: 1.7; }
+    .overlay-btns { display: flex; gap: .8rem; }
+
+    /* ── Password change overlay ── */
+    .pwd-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(5,15,26,.88); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; padding: 1rem; }
+    .pwd-overlay.on { display: flex; }
+    .pwd-box { max-width: 360px; width: 100%; padding: 2.5rem; background: var(--ocean); border: 1px solid var(--border-h); }
+    .pwd-box h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--cream); margin-bottom: 1.5rem; }
+    .pwd-err { color: var(--red); font-size: .8rem; margin-top: .5rem; display: none; }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .sidebar { width: 220px; }
+      .ed-fields { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) {
+      .adm-body { flex-direction: column; }
+      .sidebar { width: 100%; height: 200px; border-right: none; border-bottom: 1px solid var(--border); }
+      .post-list { display: flex; overflow-x: auto; overflow-y: hidden; }
+      .pi { min-width: 200px; border-bottom: none; border-right: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">Sea<b>Urchin</b></div>
+    <div class="login-sub">Blog Administration</div>
+    <label class="f-label">Password</label>
+    <input class="f-input" type="password" id="loginPwd" placeholder="Enter password…" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-cyan btn-full" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="loginErr">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN PANEL ═══ -->
+<div id="adminPanel">
+
+  <header class="adm-header">
+    <div style="display:flex;align-items:center">
+      <a href="index.html" class="adm-logo">Sea<b>Urchin</b></a>
+      <span class="adm-logo-badge">Blog Admin</span>
+    </div>
+    <div class="adm-hdr-r">
+      <span id="postCount"></span>
+      <div class="adm-sep"></div>
+      <a href="#" onclick="showPwdModal()">Change Password</a>
+      <div class="adm-sep"></div>
+      <a href="index.html" target="_blank">← View Site</a>
+      <div class="adm-sep"></div>
+      <a href="#" onclick="doLogout()">Logout</a>
+    </div>
+  </header>
+
+  <div class="adm-body">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sb-top">
+        <button class="btn btn-cyan btn-full btn-sm" onclick="newPost()">+ New Post</button>
+        <input class="sb-search" type="text" id="sbSearch" placeholder="Search posts…" oninput="renderList()">
+      </div>
+      <div class="post-list" id="postList"></div>
+    </aside>
+
+    <!-- Editor -->
+    <div class="ed-wrap" id="edWrap" style="display:none">
+
+      <div class="ed-toolbar">
+        <button class="tb" onclick="fmt('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
+        <button class="tb" onclick="fmt('italic')" title="Italic"><em>I</em></button>
+        <div class="tb-sep"></div>
+        <button class="tb" onclick="fmt('h2')">H2</button>
+        <button class="tb" onclick="fmt('h3')">H3</button>
+        <div class="tb-sep"></div>
+        <button class="tb" onclick="fmt('quote')" title="Blockquote">"</button>
+        <button class="tb" onclick="fmt('ul')" title="List">—</button>
+        <button class="tb" onclick="fmt('ol')" title="Numbered list">1.</button>
+        <div class="tb-sep"></div>
+        <button class="tb" onclick="fmt('link')" title="Link">Link</button>
+        <button class="tb" onclick="fmt('hr')" title="Divider">÷</button>
+        <div class="tb-sep"></div>
+        <button class="tb" onclick="fmt('code')" title="Code">&lt;/&gt;</button>
+        <div class="tb-tabs">
+          <button class="tb-tab on" id="tabW" onclick="setEdTab('write')">Write</button>
+          <button class="tb-tab" id="tabP" onclick="setEdTab('preview')">Preview</button>
+        </div>
+      </div>
+
+      <div class="ed-fields">
+        <div class="ef">
+          <label>Title</label>
+          <input type="text" id="fTitle" placeholder="Post title…" oninput="dirty()">
+        </div>
+        <div class="ef">
+          <label>Category</label>
+          <select id="fTag" onchange="dirty()">
+            <option>Marine Life</option>
+            <option>Conservation</option>
+            <option>Ocean Health</option>
+            <option>Science</option>
+            <option>Wrecks</option>
+            <option>Freediving</option>
+            <option>Training</option>
+            <option>Dive Sites</option>
+            <option>News</option>
+            <option>Blog</option>
+          </select>
+        </div>
+        <div class="ef">
+          <label>Date</label>
+          <input type="date" id="fDate" onchange="dirty()">
+        </div>
+      </div>
+
+      <div class="ed-excerpt">
+        <label>Excerpt <span style="font-size:.6rem;color:var(--muted);text-transform:none;letter-spacing:0">— shown as card description on the main site</span></label>
+        <input type="text" id="fExcerpt" placeholder="One-sentence description…" oninput="dirty()">
+      </div>
+
+      <div class="ed-body">
+        <textarea id="mdEditor"
+          placeholder="Write in Markdown…&#10;&#10;## Heading&#10;**Bold text**, *italic*, [link](https://example.com)&#10;- List item&#10;&#10;> Blockquote"
+          oninput="dirty();if(edTab==='preview')updatePreview()"></textarea>
+        <div id="previewPane"><div class="prev" id="prevBody"></div></div>
+      </div>
+
+      <div class="ed-footer">
+        <div class="toggle-row" onclick="toggleFeatured()">
+          <div class="sw" id="swFeatured"></div>
+          <span>Featured</span>
+        </div>
+        <span class="save-ind" id="saveInd"></span>
+        <div class="ed-footer-r">
+          <button class="btn btn-red btn-sm" onclick="askDelete()">Delete</button>
+          <button class="btn btn-ghost btn-sm" onclick="save(false)">Save Draft</button>
+          <button class="btn btn-cyan btn-sm" onclick="save(true)">Publish</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" id="emptyState">
+      <h3>Ocean Journal</h3>
+      <p>Select a post from the sidebar to edit, or create a new one to get started.</p>
+      <button class="btn btn-cyan" onclick="newPost()">+ New Post</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Delete confirm overlay -->
+<div class="overlay" id="delOverlay">
+  <div class="overlay-box">
+    <h3>Delete post?</h3>
+    <p>This cannot be undone. The post will be permanently removed from the site.</p>
+    <div class="overlay-btns">
+      <button class="btn btn-ghost" onclick="closeOverlay('delOverlay')">Cancel</button>
+      <button class="btn btn-red" onclick="doDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Password change overlay -->
+<div class="pwd-overlay" id="pwdOverlay">
+  <div class="pwd-box">
+    <h3>Change Password</h3>
+    <label class="f-label">Current Password</label>
+    <input class="f-input" type="password" id="pwdCurrent" placeholder="Current password">
+    <label class="f-label">New Password</label>
+    <input class="f-input" type="password" id="pwdNew" placeholder="New password">
+    <label class="f-label">Confirm New Password</label>
+    <input class="f-input" type="password" id="pwdConfirm" placeholder="Confirm new password">
+    <div class="overlay-btns">
+      <button class="btn btn-ghost" onclick="closeOverlay('pwdOverlay')">Cancel</button>
+      <button class="btn btn-cyan" onclick="changePwd()">Update Password</button>
+    </div>
+    <div class="pwd-err" id="pwdErr"></div>
+  </div>
+</div>
+
+<script>
+/* ══ Config ══ */
+const POSTS_KEY  = 'su_posts';
+const AUTH_KEY   = 'su_admin_auth';
+const PWD_KEY    = 'su_admin_pwd';
+const DEFAULT_PWD = 'seaurchin2024';
+
+/* ══ State ══ */
+let posts    = [];
+let curId    = null;
+let isDirty  = false;
+let edTab    = 'write';
+let featured = false;
+
+/* ══ Init ══ */
+function init() {
+  if (!localStorage.getItem(PWD_KEY)) localStorage.setItem(PWD_KEY, DEFAULT_PWD);
+  if (localStorage.getItem(AUTH_KEY) === '1') showAdmin();
+}
+
+/* ══ Auth ══ */
+function doLogin() {
+  const val = document.getElementById('loginPwd').value;
+  if (val === (localStorage.getItem(PWD_KEY) || DEFAULT_PWD)) {
+    localStorage.setItem(AUTH_KEY, '1');
+    document.getElementById('loginErr').style.display = 'none';
+    showAdmin();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+    document.getElementById('loginPwd').value = '';
+    document.getElementById('loginPwd').focus();
+  }
+}
+function doLogout() { localStorage.removeItem(AUTH_KEY); location.reload(); }
+
+function showAdmin() {
+  document.getElementById('loginScreen').style.display = 'none';
+  const p = document.getElementById('adminPanel');
+  p.classList.add('on');
+  posts = load();
+  renderList();
+  updateCount();
+}
+
+/* ══ Storage ══ */
+function load() { try { return JSON.parse(localStorage.getItem(POSTS_KEY)||'[]'); } catch { return []; } }
+function store() { localStorage.setItem(POSTS_KEY, JSON.stringify(posts)); }
+
+/* ══ Post list ══ */
+function renderList() {
+  const q   = (document.getElementById('sbSearch').value||'').toLowerCase();
+  const el  = document.getElementById('postList');
+  const arr = posts
+    .filter(p => p.title.toLowerCase().includes(q) || p.tag.toLowerCase().includes(q))
+    .sort((a,b) => new Date(b.date) - new Date(a.date));
+
+  if (!arr.length) {
+    el.innerHTML = `<div class="sb-empty">${q ? 'No matches.' : 'No posts yet.'}</div>`;
+    return;
+  }
+  el.innerHTML = arr.map(p => `
+    <div class="pi ${p.id===curId?'active':''}" onclick="editPost('${esc(p.id)}')">
+      <div class="pi-title">${esc(p.title)||'(Untitled)'}</div>
+      <div class="pi-meta">
+        <div class="pi-dot ${p.published?'pub':'dft'}"></div>
+        <span class="pi-status ${p.published?'pub':'dft'}">${p.published?'Published':'Draft'}</span>
+        <span>·</span><span>${esc(p.tag)}</span>
+        <span>·</span><span>${fmtDate(p.date)}</span>
+      </div>
+    </div>`).join('');
+}
+
+function updateCount() {
+  const pub = posts.filter(p=>p.published).length;
+  document.getElementById('postCount').textContent =
+    `${posts.length} post${posts.length!==1?'s':''} · ${pub} published`;
+}
+
+/* ══ New post ══ */
+function newPost() {
+  const p = {
+    id: 'su-' + Date.now() + '-' + Math.random().toString(36).slice(2,5),
+    title:'', tag:'Marine Life', excerpt:'', content:'',
+    date: new Date().toISOString().slice(0,10),
+    published: false, featured: false
+  };
+  posts.unshift(p);
+  store();
+  editPost(p.id);
+  renderList();
+  updateCount();
+}
+
+/* ══ Edit post ══ */
+function editPost(id) {
+  const p = posts.find(x=>x.id===id);
+  if (!p) return;
+  curId = id;
+
+  document.getElementById('fTitle').value   = p.title;
+  document.getElementById('fTag').value     = p.tag;
+  document.getElementById('fDate').value    = p.date;
+  document.getElementById('fExcerpt').value = p.excerpt;
+  document.getElementById('mdEditor').value = p.content;
+
+  featured = !!p.featured;
+  document.getElementById('swFeatured').classList.toggle('on', featured);
+
+  document.getElementById('edWrap').style.display  = 'flex';
+  document.getElementById('emptyState').style.display = 'none';
+
+  setEdTab('write');
+  clearDirty();
+  renderList();
+  document.getElementById('fTitle').focus();
+}
+
+/* ══ Save ══ */
+function save(publish) {
+  if (!curId) return;
+  const idx = posts.findIndex(p=>p.id===curId);
+  if (idx < 0) return;
+
+  posts[idx] = {
+    ...posts[idx],
+    title:     document.getElementById('fTitle').value.trim(),
+    tag:       document.getElementById('fTag').value,
+    date:      document.getElementById('fDate').value,
+    excerpt:   document.getElementById('fExcerpt').value.trim(),
+    content:   document.getElementById('mdEditor').value,
+    published: publish,
+    featured,
+  };
+
+  store();
+  clearDirty();
+  renderList();
+  updateCount();
+
+  const ind = document.getElementById('saveInd');
+  ind.textContent = publish ? 'Published ✓' : 'Draft saved ✓';
+  ind.classList.add('ok');
+  setTimeout(() => { ind.textContent = ''; ind.classList.remove('ok'); }, 2800);
+}
+
+/* ══ Delete ══ */
+function askDelete() { document.getElementById('delOverlay').classList.add('on'); }
+function doDelete() {
+  posts = posts.filter(p => p.id !== curId);
+  store();
+  curId = null;
+  document.getElementById('edWrap').style.display  = 'none';
+  document.getElementById('emptyState').style.display = 'flex';
+  closeOverlay('delOverlay');
+  renderList();
+  updateCount();
+}
+
+/* ══ Featured toggle ══ */
+function toggleFeatured() {
+  featured = !featured;
+  document.getElementById('swFeatured').classList.toggle('on', featured);
+  dirty();
+}
+
+/* ══ Editor tabs ══ */
+function setEdTab(t) {
+  edTab = t;
+  document.getElementById('tabW').classList.toggle('on', t==='write');
+  document.getElementById('tabP').classList.toggle('on', t==='preview');
+  document.getElementById('mdEditor').style.display    = t==='write' ? 'block' : 'none';
+  const pp = document.getElementById('previewPane');
+  if (t==='preview') { pp.classList.add('on'); updatePreview(); }
+  else pp.classList.remove('on');
+}
+
+function updatePreview() {
+  const md   = document.getElementById('mdEditor').value;
+  const html = DOMPurify.sanitize(marked.parse(md));
+  document.getElementById('prevBody').innerHTML = html;
+}
+
+/* ══ Toolbar ══ */
+function fmt(action) {
+  const ta    = document.getElementById('mdEditor');
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  const sel   = ta.value.slice(start, end);
+  const before = ta.value.slice(0, start);
+  const after  = ta.value.slice(end);
+  let insert = '', cur = 0;
+
+  if (action === 'bold')   { const w='**'; const t=sel||'bold text';   insert=w+t+w;   cur=sel?insert.length:w.length; }
+  if (action === 'italic') { const w='*';  const t=sel||'italic text'; insert=w+t+w;   cur=sel?insert.length:w.length; }
+  if (action === 'h2')     { insert='\n## '+(sel||'Heading')+'\n';           cur=insert.length; }
+  if (action === 'h3')     { insert='\n### '+(sel||'Subheading')+'\n';       cur=insert.length; }
+  if (action === 'quote')  { insert='\n> '+(sel||'Quote')+'\n';              cur=insert.length; }
+  if (action === 'ul')     { insert='\n- '+(sel||'Item')+'\n';               cur=insert.length; }
+  if (action === 'ol')     { insert='\n1. '+(sel||'Item')+'\n';              cur=insert.length; }
+  if (action === 'hr')     { insert='\n\n---\n\n';                           cur=insert.length; }
+  if (action === 'code')   { const w='`'; const t=sel||'code'; insert=w+t+w; cur=sel?insert.length:w.length; }
+  if (action === 'link') {
+    const url  = prompt('URL:', 'https://');
+    if (!url) return;
+    const t    = sel || 'link text';
+    insert     = '['+t+']('+url+')';
+    cur        = insert.length;
+  }
+
+  ta.value = before + insert + after;
+  ta.focus();
+  ta.selectionStart = ta.selectionEnd = start + cur;
+  dirty();
+}
+
+/* ══ Dirty state ══ */
+function dirty() {
+  isDirty = true;
+  const ind = document.getElementById('saveInd');
+  ind.textContent = 'Unsaved changes';
+  ind.classList.remove('ok');
+}
+function clearDirty() {
+  isDirty = false;
+  document.getElementById('saveInd').textContent = '';
+}
+
+/* ══ Password change ══ */
+function showPwdModal() { document.getElementById('pwdOverlay').classList.add('on'); }
+function changePwd() {
+  const cur  = document.getElementById('pwdCurrent').value;
+  const nw   = document.getElementById('pwdNew').value;
+  const conf = document.getElementById('pwdConfirm').value;
+  const err  = document.getElementById('pwdErr');
+  const stored = localStorage.getItem(PWD_KEY) || DEFAULT_PWD;
+
+  if (cur !== stored)        { showPwdErr('Current password is incorrect.'); return; }
+  if (nw.length < 6)         { showPwdErr('New password must be at least 6 characters.'); return; }
+  if (nw !== conf)           { showPwdErr('Passwords do not match.'); return; }
+
+  localStorage.setItem(PWD_KEY, nw);
+  closeOverlay('pwdOverlay');
+  ['pwdCurrent','pwdNew','pwdConfirm'].forEach(id => document.getElementById(id).value='');
+  err.style.display = 'none';
+  alert('Password updated successfully.');
+}
+function showPwdErr(msg) {
+  const el = document.getElementById('pwdErr');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+/* ══ Overlays ══ */
+function closeOverlay(id) { document.getElementById(id).classList.remove('on'); }
+
+/* ══ Utils ══ */
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(d) {
+  try { return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }
+  catch { return d||''; }
+}
+
+/* ══ Keyboard shortcuts ══ */
+document.addEventListener('keydown', e => {
+  if ((e.metaKey||e.ctrlKey) && e.key==='s') {
+    e.preventDefault();
+    if (curId) save(posts.find(p=>p.id===curId)?.published||false);
+  }
+  if (e.key==='Escape') {
+    closeOverlay('delOverlay');
+    closeOverlay('pwdOverlay');
+  }
+});
+
+/* ══ Unsaved warning ══ */
+window.addEventListener('beforeunload', e => { if (isDirty) { e.preventDefault(); e.returnValue=''; } });
+
+init();
+</script>
+</body>
+</html>

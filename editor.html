@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SeaUrchin — Page Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --deep:     #050f1a;
+      --ocean:    #0b2035;
+      --teal:     #0a7a72;
+      --cyan:     #1bc8bc;
+      --sand:     #c4924f;
+      --cream:    #f0ebe3;
+      --text:     #c8c4be;
+      --muted:    #6a7a86;
+      --border:   rgba(27,200,188,.09);
+      --border-h: rgba(27,200,188,.28);
+      --green:    #4caf7d;
+      --red:      #e05252;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--deep); }
+    body { font-family: 'DM Sans', sans-serif; font-weight: 300; color: var(--text); display: flex; flex-direction: column; }
+
+    /* ══ TOOLBAR ══ */
+    #bar {
+      height: 52px; flex-shrink: 0;
+      display: flex; align-items: center; gap: .25rem;
+      padding: 0 1rem;
+      background: rgba(8,24,40,.99); border-bottom: 1px solid var(--border);
+      overflow-x: auto; overflow-y: hidden; position: relative; z-index: 100;
+    }
+    #bar::-webkit-scrollbar { height: 0; }
+
+    .bar-logo { font-family:'Cormorant Garamond',serif; font-size:1.1rem; letter-spacing:.1em; text-transform:uppercase; color:var(--cream); text-decoration:none; white-space:nowrap; margin-right:.3rem; }
+    .bar-logo b { color:var(--cyan); font-weight:400; }
+    .bar-badge { font-size:.58rem; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); padding:.15rem .5rem; border:1px solid var(--border); white-space:nowrap; margin-right:.7rem; }
+
+    .bsep { width:1px; height:22px; background:var(--border); margin:0 .3rem; flex-shrink:0; }
+
+    /* mode toggle */
+    .mode-toggle { display:flex; border:1px solid var(--border); flex-shrink:0; margin-right:.4rem; }
+    .mode-btn { padding:.35rem .85rem; background:transparent; border:none; font-family:'DM Sans',sans-serif; font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); cursor:pointer; transition:.18s; white-space:nowrap; }
+    .mode-btn.on { background:rgba(27,200,188,.12); color:var(--cyan); }
+
+    /* generic toolbar btn */
+    .tb {
+      min-width:28px; height:28px; padding:0 .42rem;
+      display:flex; align-items:center; justify-content:center; gap:.25rem;
+      background:transparent; border:1px solid var(--border);
+      color:var(--muted); cursor:pointer; font-family:'DM Sans',sans-serif;
+      font-size:.74rem; font-weight:500; letter-spacing:.02em; white-space:nowrap;
+      transition:background .16s, color .16s, border-color .16s; flex-shrink:0;
+      text-decoration:none;
+    }
+    .tb:hover  { background:rgba(27,200,188,.08); border-color:var(--border-h); color:var(--cyan); }
+    .tb.on     { background:rgba(27,200,188,.13); border-color:rgba(27,200,188,.32); color:var(--cyan); }
+    .tb-cyan   { background:var(--cyan); color:var(--deep); border-color:var(--cyan); font-weight:500; }
+    .tb-cyan:hover { background:#3de0d4; border-color:#3de0d4; color:var(--deep); }
+
+    /* color swatch */
+    .clr-wrap { position:relative; width:28px; height:28px; border:1px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:border-color .16s; }
+    .clr-wrap:hover { border-color:var(--border-h); }
+    .clr-dot  { width:14px; height:14px; border-radius:50%; background:var(--cream); pointer-events:none; }
+    .clr-wrap input[type=color] { position:absolute; inset:-4px; opacity:0; cursor:pointer; width:calc(100% + 8px); height:calc(100% + 8px); }
+
+    /* ══ CANVAS ══ */
+    #canvas {
+      flex:1; position:relative; overflow:hidden;
+      transition: margin-right .32s ease;
+    }
+    #canvas.panel-open { margin-right: 370px; }
+
+    #frame { width:100%; height:100%; border:none; display:block; background:#fff; }
+
+    /* edit-mode outline hint (injected into iframe via JS) */
+
+    /* ══ FLOATING SELECTION TOOLBAR ══ */
+    #selbar {
+      position:fixed; z-index:200; display:none;
+      align-items:center; gap:2px;
+      background:rgba(8,24,40,.97); border:1px solid var(--border-h);
+      padding:.32rem .4rem;
+      box-shadow:0 8px 28px rgba(0,0,0,.55);
+      pointer-events:auto;
+      transform:translateX(-50%);
+    }
+    #selbar.show { display:flex; }
+    #selbar::after { content:''; position:absolute; bottom:-5px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:5px solid var(--border-h); }
+    .stb { min-width:24px; height:24px; padding:0 .38rem; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:var(--muted); cursor:pointer; font-family:'DM Sans',sans-serif; font-size:.74rem; font-weight:500; transition:color .14s, background .14s; border-radius:2px; }
+    .stb:hover { background:rgba(27,200,188,.1); color:var(--cyan); }
+    .stb-sep { width:1px; height:16px; background:var(--border); margin:0 .08rem; }
+
+    /* ══ MEDIA PANEL ══ */
+    #panel {
+      position:fixed; top:52px; right:0; bottom:0; width:370px;
+      background:rgba(8,24,40,.99); border-left:1px solid var(--border);
+      display:flex; flex-direction:column;
+      transform:translateX(100%); transition:transform .32s ease;
+      z-index:80;
+    }
+    #panel.open { transform:translateX(0); }
+
+    .pn-hdr { padding:1rem 1.2rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .pn-title { font-family:'Cormorant Garamond',serif; font-size:1.3rem; color:var(--cream); font-weight:300; }
+    .pn-close { width:28px; height:28px; background:none; border:1px solid var(--border); color:var(--muted); cursor:pointer; font-size:.9rem; display:flex; align-items:center; justify-content:center; transition:.16s; }
+    .pn-close:hover { border-color:var(--border-h); color:var(--cream); }
+
+    .pn-tabs { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
+    .pn-tab { flex:1; padding:.7rem; background:none; border:none; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:.68rem; letter-spacing:.13em; text-transform:uppercase; cursor:pointer; border-bottom:2px solid transparent; transition:color .18s, border-color .18s; }
+    .pn-tab.on { color:var(--cyan); border-bottom-color:var(--cyan); }
+
+    .pn-body { flex:1; overflow-y:auto; padding:1.2rem; }
+    .pn-body::-webkit-scrollbar { width:3px; }
+    .pn-body::-webkit-scrollbar-thumb { background:var(--border); }
+
+    .pn-label { display:block; font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-bottom:.5rem; }
+    .pn-sec { margin-bottom:1.4rem; }
+    .pn-or { text-align:center; color:var(--muted); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; margin:.9rem 0; }
+
+    .drop-zone {
+      border:1px dashed rgba(27,200,188,.22); padding:1.6rem 1rem;
+      text-align:center; cursor:pointer; transition:border-color .2s, background .2s;
+      position:relative;
+    }
+    .drop-zone:hover, .drop-zone.drag { border-color:rgba(27,200,188,.5); background:rgba(27,200,188,.04); }
+    .drop-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .dz-icon { font-size:1.8rem; opacity:.35; margin-bottom:.4rem; }
+    .dz-text { font-size:.78rem; color:var(--muted); }
+    .dz-text strong { color:var(--cyan); font-weight:400; }
+
+    .pn-input { width:100%; padding:.6rem .85rem; background:rgba(5,15,26,.8); border:1px solid var(--border); color:var(--cream); font-family:'DM Sans',sans-serif; font-size:.84rem; outline:none; transition:border-color .2s; margin-bottom:.7rem; }
+    .pn-input:focus { border-color:var(--border-h); }
+    .pn-input::placeholder { color:var(--muted); }
+
+    .pn-prev { margin:.8rem 0; border:1px solid var(--border); min-height:100px; display:flex; align-items:center; justify-content:center; background:rgba(5,15,26,.4); overflow:hidden; }
+    .pn-prev img { max-width:100%; max-height:180px; display:block; }
+    .pn-prev video, .pn-prev iframe { max-width:100%; width:100%; aspect-ratio:16/9; border:none; display:block; }
+    .pn-prev-empty { color:var(--muted); font-size:.78rem; }
+
+    .pn-btn { width:100%; padding:.7rem; background:var(--cyan); color:var(--deep); border:none; font-family:'DM Sans',sans-serif; font-size:.7rem; letter-spacing:.13em; text-transform:uppercase; font-weight:500; cursor:pointer; transition:background .2s; margin-top:.5rem; }
+    .pn-btn:hover { background:#3de0d4; }
+    .pn-btn:disabled { background:rgba(106,122,134,.3); color:var(--muted); cursor:not-allowed; }
+
+    .radio-row { display:flex; gap:.4rem; margin-bottom:.8rem; }
+    .radio-opt { flex:1; padding:.45rem; border:1px solid var(--border); text-align:center; cursor:pointer; font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); transition:.18s; }
+    .radio-opt.on { border-color:rgba(27,200,188,.35); color:var(--cyan); background:rgba(27,200,188,.07); }
+
+    /* ══ TOAST ══ */
+    #toast {
+      position:fixed; bottom:1.8rem; left:50%; transform:translateX(-50%) translateY(1.5rem);
+      background:rgba(8,24,40,.97); border:1px solid var(--border-h);
+      color:var(--cream); font-size:.76rem; letter-spacing:.05em;
+      padding:.7rem 1.4rem; z-index:600; pointer-events:none; white-space:nowrap;
+      opacity:0; transition:opacity .28s, transform .28s;
+    }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    #toast.ok   { border-color:rgba(76,175,125,.45); color:var(--green); }
+
+    /* ══ DRAFT BANNER ══ */
+    #draftBanner {
+      position:fixed; bottom:0; left:0; right:0; z-index:90;
+      background:rgba(8,24,40,.97); border-top:1px solid rgba(196,146,79,.3);
+      padding:.9rem 1.4rem; display:none; align-items:center; gap:1rem;
+    }
+    #draftBanner.show { display:flex; }
+    #draftBanner p { font-size:.82rem; color:var(--text); flex:1; }
+    #draftBanner strong { color:var(--sand); }
+
+    /* ══ EDIT HINT ══ */
+    #editHint {
+      position:fixed; top:62px; left:50%; transform:translateX(-50%);
+      background:rgba(27,200,188,.12); border:1px solid rgba(27,200,188,.35);
+      color:var(--cyan); font-size:.64rem; letter-spacing:.15em; text-transform:uppercase;
+      padding:.38rem 1rem; pointer-events:none; z-index:50;
+      opacity:0; transition:opacity .4s; white-space:nowrap;
+    }
+    #editHint.show { opacity:1; }
+
+    /* ══ IMG HOVER overlay btn (injected) ══ */
+    .su-img-btn {
+      position:absolute; z-index:9999;
+      background:rgba(8,24,40,.92); border:1px solid rgba(27,200,188,.4);
+      color:#1bc8bc; font-size:.64rem; letter-spacing:.12em; text-transform:uppercase;
+      padding:.32rem .75rem; cursor:pointer; pointer-events:auto;
+      font-family:'DM Sans',sans-serif;
+      transform:translateX(-50%);
+      transition:background .18s, color .18s;
+    }
+    .su-img-btn:hover { background:#1bc8bc; color:#050f1a; }
+  </style>
+</head>
+<body>
+
+<!-- ═══ TOOLBAR ═══ -->
+<header id="bar">
+  <a href="index.html" class="bar-logo">Sea<b>Urchin</b></a>
+  <span class="bar-badge">Page Editor</span>
+
+  <div class="mode-toggle">
+    <button class="mode-btn on" id="btnEdit"    onclick="setMode('edit')">✎ Edit</button>
+    <button class="mode-btn"   id="btnPreview" onclick="setMode('preview')">◉ Preview</button>
+  </div>
+
+  <div class="bsep"></div>
+
+  <button class="tb" id="tbB" onclick="cmd('bold')"          title="Bold · Ctrl+B"><b>B</b></button>
+  <button class="tb" id="tbI" onclick="cmd('italic')"        title="Italic · Ctrl+I"><em>I</em></button>
+  <button class="tb" id="tbU" onclick="cmd('underline')"     title="Underline"><u>U</u></button>
+  <button class="tb" id="tbS" onclick="cmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+
+  <div class="bsep"></div>
+
+  <button class="tb" onclick="cmd('formatBlock','h1')"  title="Heading 1">H1</button>
+  <button class="tb" onclick="cmd('formatBlock','h2')"  title="Heading 2">H2</button>
+  <button class="tb" onclick="cmd('formatBlock','h3')"  title="Heading 3">H3</button>
+  <button class="tb" onclick="cmd('formatBlock','p')"   title="Paragraph">¶</button>
+
+  <div class="bsep"></div>
+
+  <button class="tb" onclick="cmd('justifyLeft')"   title="Align left">
+    <svg width="13" height="11" viewBox="0 0 13 11" fill="currentColor"><rect y="0" width="13" height="1.5"/><rect y="3.25" width="9" height="1.5"/><rect y="6.5" width="13" height="1.5"/><rect y="9.75" width="9" height="1.5"/></svg>
+  </button>
+  <button class="tb" onclick="cmd('justifyCenter')" title="Center">
+    <svg width="13" height="11" viewBox="0 0 13 11" fill="currentColor"><rect y="0" width="13" height="1.5"/><rect x="2" y="3.25" width="9" height="1.5"/><rect y="6.5" width="13" height="1.5"/><rect x="2" y="9.75" width="9" height="1.5"/></svg>
+  </button>
+  <button class="tb" onclick="cmd('justifyRight')"  title="Align right">
+    <svg width="13" height="11" viewBox="0 0 13 11" fill="currentColor"><rect y="0" width="13" height="1.5"/><rect x="4" y="3.25" width="9" height="1.5"/><rect y="6.5" width="13" height="1.5"/><rect x="4" y="9.75" width="9" height="1.5"/></svg>
+  </button>
+
+  <div class="bsep"></div>
+
+  <!-- Text color -->
+  <div class="clr-wrap" title="Text colour">
+    <div class="clr-dot" id="clrDot"></div>
+    <input type="color" id="clrPicker" value="#f0ebe3" oninput="applyColor(this.value)" onchange="applyColor(this.value)">
+  </div>
+
+  <div class="bsep"></div>
+
+  <!-- Insert -->
+  <button class="tb" onclick="insertLink()" title="Insert / edit link">
+    <svg width="13" height="12" viewBox="0 0 13 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M5 7.5a3 3 0 0 0 4.24 0l2-2a3 3 0 0 0-4.24-4.24L5.5 2.75"/><path d="M8 4.5a3 3 0 0 0-4.24 0l-2 2a3 3 0 0 0 4.24 4.24L7.5 9.25"/></svg>
+    Link
+  </button>
+  <button class="tb" onclick="openPanel('image')" title="Insert / replace image">
+    <svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x=".5" y=".5" width="13" height="11" rx="1"/><circle cx="4" cy="3.5" r="1.2"/><path d="M.5 9l3.5-3.5 2.5 2.5 2-2 3.5 3.5"/></svg>
+    Image
+  </button>
+  <button class="tb" onclick="openPanel('video')" title="Insert video">
+    <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x=".5" y=".5" width="8" height="10" rx="1"/><path d="M8.5 3.5l4 2-4 2V3.5z" fill="currentColor" stroke="none"/></svg>
+    Video
+  </button>
+
+  <div class="bsep"></div>
+
+  <button class="tb" onclick="cmd('undo')" title="Undo · Ctrl+Z">
+    <svg width="13" height="12" viewBox="0 0 13 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4.5h7a4 4 0 1 1 0 8"/><path d="M1 4.5l3-3M1 4.5l3 3"/></svg>
+  </button>
+  <button class="tb" onclick="cmd('redo')" title="Redo · Ctrl+Y">
+    <svg width="13" height="12" viewBox="0 0 13 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5H5a4 4 0 1 0 0 8"/><path d="M12 4.5l-3-3m3 3l-3 3"/></svg>
+  </button>
+
+  <div class="bsep"></div>
+
+  <button class="tb" onclick="saveDraft()" title="Save draft to browser · Ctrl+S">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 12H2.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h6.5l2 2V11a1 1 0 0 1-1 1z"/><rect x="3.5" y="7.5" width="6" height="4.5"/><rect x="4" y="1" width="5" height="3"/></svg>
+    Save
+  </button>
+  <button class="tb tb-cyan" onclick="exportHTML()" title="Download modified index.html">
+    <svg width="12" height="13" viewBox="0 0 12 13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 1v8M3 7l3 3 3-3"/><path d="M1 11h10"/></svg>
+    Export
+  </button>
+
+  <div class="bsep"></div>
+  <a href="admin.html" class="tb" style="font-size:.64rem;letter-spacing:.1em;text-transform:uppercase">Blog</a>
+</header>
+
+<div id="editHint">Click any text to edit &nbsp;·&nbsp; Click images to replace them</div>
+
+<!-- ═══ CANVAS ═══ -->
+<div id="canvas">
+  <iframe id="frame" src="index.html" allowfullscreen></iframe>
+</div>
+
+<!-- ═══ FLOATING SELECTION TOOLBAR ═══ -->
+<div id="selbar">
+  <button class="stb" onclick="cmd('bold')"         title="Bold"><b>B</b></button>
+  <button class="stb" onclick="cmd('italic')"       title="Italic"><em>I</em></button>
+  <button class="stb" onclick="cmd('underline')"    title="Underline"><u>U</u></button>
+  <div class="stb-sep"></div>
+  <button class="stb" onclick="cmd('formatBlock','h2')">H2</button>
+  <button class="stb" onclick="cmd('formatBlock','h3')">H3</button>
+  <button class="stb" onclick="cmd('formatBlock','p')">P</button>
+  <div class="stb-sep"></div>
+  <button class="stb" onclick="insertLink()" title="Link">
+    <svg width="12" height="11" viewBox="0 0 12 11" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M4.5 7a2.8 2.8 0 0 0 3.9 0l1.9-1.9A2.8 2.8 0 0 0 6.4.7L5.2 1.9"/><path d="M7.5 4a2.8 2.8 0 0 0-3.9 0L1.7 5.9A2.8 2.8 0 0 0 5.6 9.8L6.8 8.6"/></svg>
+  </button>
+  <button class="stb" onclick="cmd('removeFormat')" title="Clear formatting">✕</button>
+</div>
+
+<!-- ═══ MEDIA PANEL ═══ -->
+<div id="panel">
+  <div class="pn-hdr">
+    <span class="pn-title" id="panelTitle">Insert Media</span>
+    <button class="pn-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="pn-tabs">
+    <button class="pn-tab on" id="ptImg"   onclick="switchPTab('image')">Image</button>
+    <button class="pn-tab"   id="ptVideo" onclick="switchPTab('video')">Video</button>
+  </div>
+  <div class="pn-body">
+
+    <!-- IMAGE -->
+    <div id="pnImage">
+      <div class="pn-sec">
+        <span class="pn-label">Upload from device</span>
+        <div class="drop-zone" id="imgDrop">
+          <input type="file" id="imgFile" accept="image/*" onchange="onImgFile(this)">
+          <div class="dz-icon">🖼</div>
+          <div class="dz-text"><strong>Click to browse</strong> or drag &amp; drop</div>
+          <div class="dz-text" style="font-size:.7rem;margin-top:.25rem">PNG · JPG · GIF · WebP · SVG</div>
+        </div>
+      </div>
+
+      <div class="pn-or">— or —</div>
+
+      <div class="pn-sec">
+        <span class="pn-label">Image URL</span>
+        <input class="pn-input" type="url" id="imgUrl" placeholder="https://example.com/photo.jpg" oninput="previewImgUrl()">
+      </div>
+
+      <div class="pn-prev" id="imgPrev"><span class="pn-prev-empty">Preview</span></div>
+
+      <div class="pn-sec" style="margin-top:.9rem">
+        <span class="pn-label">Alt text (accessibility)</span>
+        <input class="pn-input" type="text" id="imgAlt" placeholder="Describe the image…">
+      </div>
+
+      <button class="pn-btn" id="btnInsImg" onclick="insertImage()" disabled>Insert Image</button>
+    </div>
+
+    <!-- VIDEO -->
+    <div id="pnVideo" style="display:none">
+      <div class="pn-sec">
+        <span class="pn-label">Source</span>
+        <div class="radio-row">
+          <div class="radio-opt on" id="vURL"  onclick="setVSrc('url')">URL / Embed</div>
+          <div class="radio-opt"   id="vFile" onclick="setVSrc('file')">Upload File</div>
+        </div>
+      </div>
+
+      <div id="vUrlMode">
+        <div class="pn-sec">
+          <span class="pn-label">YouTube · Vimeo · or direct .mp4 URL</span>
+          <input class="pn-input" type="url" id="vidUrl" placeholder="https://youtube.com/watch?v=…" oninput="previewVidUrl()">
+        </div>
+      </div>
+
+      <div id="vFileMode" style="display:none">
+        <div class="pn-sec">
+          <span class="pn-label">Upload video</span>
+          <div class="drop-zone" id="vidDrop">
+            <input type="file" id="vidFile" accept="video/*" onchange="onVidFile(this)">
+            <div class="dz-icon">▶</div>
+            <div class="dz-text"><strong>Click to browse</strong> or drag &amp; drop</div>
+            <div class="dz-text" style="font-size:.7rem;margin-top:.25rem">MP4 · WebM · MOV</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pn-prev" id="vidPrev"><span class="pn-prev-empty">Preview</span></div>
+
+      <div class="pn-sec" style="margin-top:.9rem">
+        <span class="pn-label">Max width (optional)</span>
+        <input class="pn-input" type="text" id="vidWidth" placeholder="e.g. 100% or 640px">
+      </div>
+
+      <button class="pn-btn" id="btnInsVid" onclick="insertVideo()" disabled>Insert Video</button>
+    </div>
+  </div><!-- /pn-body -->
+</div><!-- /panel -->
+
+<!-- ═══ DRAFT RESTORE BANNER ═══ -->
+<div id="draftBanner">
+  <p>A <strong>saved draft</strong> exists in your browser. Restore it to continue where you left off.</p>
+  <button class="tb" onclick="discardDraft()">Discard</button>
+  <button class="tb tb-cyan" onclick="restoreDraft()">Restore Draft</button>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   SEAURCHIN PAGE EDITOR
+   ═══════════════════════════════════════════ */
+
+const DRAFT_KEY = 'su_editor_draft';
+
+let frame, fdoc, fwin;
+let editMode     = true;
+let panelOpen    = false;
+let panelTab     = 'image';
+let vSrc         = 'url';
+let pendingImg   = null;  /* {src, alt} */
+let pendingVid   = null;  /* html string */
+let replacingImg = null;  /* img element in iframe to replace */
+
+/* ── Load iframe ── */
+document.getElementById('frame').addEventListener('load', function () {
+  frame = this;
+  fwin  = this.contentWindow;
+  fdoc  = this.contentDocument || fwin.document;
+  setupFrame();
+  checkDraft();
+});
+
+function setupFrame() {
+  if (!fdoc) return;
+
+  /* Enable full-document editing */
+  fdoc.designMode = 'on';
+
+  /* Inject editor-mode styles */
+  injectStyles(true);
+
+  /* Selection → floating toolbar */
+  fdoc.addEventListener('selectionchange', onSel);
+
+  /* Click on <img> → open replace panel */
+  fdoc.addEventListener('click', e => {
+    if (e.target.tagName === 'IMG') {
+      e.preventDefault();
+      replacingImg = e.target;
+      openPanel('image');
+      document.getElementById('panelTitle').textContent = 'Replace Image';
+    }
+  });
+
+  /* Ctrl+S inside iframe */
+  fdoc.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); saveDraft(); }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); insertLink(); }
+  });
+
+  /* Show hint */
+  const h = document.getElementById('editHint');
+  h.classList.add('show');
+  setTimeout(() => h.classList.remove('show'), 3500);
+}
+
+function injectStyles(on) {
+  let st = fdoc.getElementById('__su_ed_style__');
+  if (!st) {
+    st = fdoc.createElement('style');
+    st.id = '__su_ed_style__';
+    fdoc.head.appendChild(st);
+  }
+  st.textContent = on ? `
+    *:hover                  { outline:1px dashed rgba(27,200,188,.18) !important; outline-offset:1px; }
+    img                      { cursor:pointer !important; }
+    img:hover                { outline:2px solid rgba(27,200,188,.55) !important; }
+    ::selection              { background:rgba(27,200,188,.28) !important; }
+    a[href]:not(a:hover)     { cursor:text !important; }
+  ` : '';
+}
+
+/* ── Mode ── */
+function setMode(m) {
+  editMode = m === 'edit';
+  document.getElementById('btnEdit').classList.toggle('on', editMode);
+  document.getElementById('btnPreview').classList.toggle('on', !editMode);
+  if (!fdoc) return;
+  fdoc.designMode = editMode ? 'on' : 'off';
+  injectStyles(editMode);
+  if (!editMode) hideSelbar();
+}
+
+/* ── execCommand proxy ── */
+function cmd(command, value) {
+  if (!fdoc || !editMode) return;
+  fwin.focus();
+  fdoc.execCommand(command, false, value || null);
+  syncToolbarState();
+}
+
+function applyColor(c) {
+  document.getElementById('clrDot').style.background = c;
+  cmd('foreColor', c);
+}
+
+function insertLink() {
+  if (!editMode) return;
+  const sel = fdoc?.getSelection()?.toString()?.trim();
+  const url = prompt('Enter URL:', 'https://');
+  if (!url) return;
+  if (sel) {
+    cmd('createLink', url);
+  } else {
+    const text = prompt('Link text:', 'Click here') || url;
+    fwin.focus();
+    fdoc.execCommand('insertHTML', false, `<a href="${esc(url)}">${esc(text)}</a>`);
+  }
+}
+
+function syncToolbarState() {
+  if (!fdoc) return;
+  try {
+    document.getElementById('tbB').classList.toggle('on', fdoc.queryCommandState('bold'));
+    document.getElementById('tbI').classList.toggle('on', fdoc.queryCommandState('italic'));
+    document.getElementById('tbU').classList.toggle('on', fdoc.queryCommandState('underline'));
+    document.getElementById('tbS').classList.toggle('on', fdoc.queryCommandState('strikeThrough'));
+  } catch (_) {}
+}
+
+/* ── Floating selection toolbar ── */
+function onSel() {
+  if (!editMode) return;
+  const sel = fdoc.getSelection();
+  if (!sel || sel.isCollapsed || !sel.toString().trim()) { hideSelbar(); return; }
+  try {
+    const r    = sel.getRangeAt(0).getBoundingClientRect();
+    const fr   = frame.getBoundingClientRect();
+    const bar  = document.getElementById('selbar');
+    const top  = fr.top + r.top - 46;
+    const left = fr.left + r.left + r.width / 2;
+    if (top > 60) {
+      bar.style.top  = top + 'px';
+      bar.style.left = left + 'px';
+      bar.classList.add('show');
+    } else {
+      hideSelbar();
+    }
+  } catch (_) { hideSelbar(); }
+  syncToolbarState();
+}
+function hideSelbar() { document.getElementById('selbar').classList.remove('show'); }
+
+/* ── Media Panel ── */
+function openPanel(tab) {
+  panelOpen = true;
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('canvas').classList.add('panel-open');
+  switchPTab(tab);
+  if (tab === 'image' && !replacingImg) document.getElementById('panelTitle').textContent = 'Insert Image';
+  if (tab === 'video') document.getElementById('panelTitle').textContent = 'Insert Video';
+}
+
+function closePanel() {
+  panelOpen = false;
+  replacingImg = null;
+  pendingImg = null;
+  pendingVid = null;
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('canvas').classList.remove('panel-open');
+  resetPreviews();
+}
+
+function switchPTab(t) {
+  panelTab = t;
+  document.getElementById('ptImg').classList.toggle('on', t === 'image');
+  document.getElementById('ptVideo').classList.toggle('on', t === 'video');
+  document.getElementById('pnImage').style.display = t === 'image' ? 'block' : 'none';
+  document.getElementById('pnVideo').style.display = t === 'video' ? 'block' : 'none';
+}
+
+function resetPreviews() {
+  const mt = '<span class="pn-prev-empty">Preview</span>';
+  document.getElementById('imgPrev').innerHTML = mt;
+  document.getElementById('vidPrev').innerHTML = mt;
+  document.getElementById('btnInsImg').disabled = true;
+  document.getElementById('btnInsVid').disabled = true;
+  document.getElementById('imgUrl').value = '';
+  document.getElementById('vidUrl').value = '';
+  document.getElementById('imgAlt').value = '';
+}
+
+/* ── Image ── */
+function onImgFile(inp) {
+  const file = inp.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => showImgPreview(e.target.result);
+  reader.readAsDataURL(file);
+}
+
+function previewImgUrl() {
+  const url = document.getElementById('imgUrl').value.trim();
+  if (url) showImgPreview(url);
+}
+
+function showImgPreview(src) {
+  pendingImg = { src, alt: '' };
+  const p = document.getElementById('imgPrev');
+  p.innerHTML = '';
+  const img = new Image();
+  img.onload  = () => { p.appendChild(img); document.getElementById('btnInsImg').disabled = false; };
+  img.onerror = () => { p.innerHTML = '<span class="pn-prev-empty" style="color:var(--red)">Could not load image</span>'; };
+  img.src = src;
+  img.style.cssText = 'max-width:100%;max-height:180px;display:block';
+}
+
+function insertImage() {
+  if (!pendingImg?.src || !fdoc) return;
+  const alt = document.getElementById('imgAlt').value || pendingImg.alt || '';
+  if (replacingImg) {
+    replacingImg.src = pendingImg.src;
+    if (alt) replacingImg.alt = alt;
+    toast('Image replaced ✓', true);
+  } else {
+    fwin.focus();
+    fdoc.execCommand('insertHTML', false,
+      `<img src="${esc(pendingImg.src)}" alt="${esc(alt)}" style="max-width:100%;height:auto;display:block;margin:1rem 0">`);
+    toast('Image inserted ✓', true);
+  }
+  closePanel();
+}
+
+/* ── Video ── */
+function setVSrc(t) {
+  vSrc = t;
+  document.getElementById('vURL').classList.toggle('on', t === 'url');
+  document.getElementById('vFile').classList.toggle('on', t === 'file');
+  document.getElementById('vUrlMode').style.display  = t === 'url'  ? 'block' : 'none';
+  document.getElementById('vFileMode').style.display = t === 'file' ? 'block' : 'none';
+}
+
+function previewVidUrl() {
+  const url = document.getElementById('vidUrl').value.trim();
+  if (!url) return;
+
+  /* YouTube */
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if (yt) return showVidPreview(`<iframe src="https://www.youtube.com/embed/${yt[1]}" style="width:100%;aspect-ratio:16/9;border:none" allowfullscreen></iframe>`);
+
+  /* Vimeo */
+  const vm = url.match(/vimeo\.com\/(\d+)/);
+  if (vm) return showVidPreview(`<iframe src="https://player.vimeo.com/video/${vm[1]}" style="width:100%;aspect-ratio:16/9;border:none" allowfullscreen></iframe>`);
+
+  /* Direct URL */
+  showVidPreview(`<video controls style="max-width:100%;display:block"><source src="${esc(url)}"></video>`);
+}
+
+function onVidFile(inp) {
+  const file = inp.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  showVidPreview(`<video controls style="max-width:100%;display:block"><source src="${esc(url)}" type="${esc(file.type)}"></video>`);
+}
+
+function showVidPreview(html) {
+  pendingVid = html;
+  document.getElementById('vidPrev').innerHTML = html;
+  document.getElementById('btnInsVid').disabled = false;
+}
+
+function insertVideo() {
+  if (!pendingVid || !fdoc) return;
+  const w = document.getElementById('vidWidth').value.trim();
+  let html = pendingVid;
+  if (w) html = html.replace(/max-width:[^;"]+/, `max-width:${w}`).replace(/width:[^;"]+/, `width:${w}`);
+  fwin.focus();
+  fdoc.execCommand('insertHTML', false, `<div style="margin:1.5rem 0">${html}</div>`);
+  toast('Video inserted ✓', true);
+  closePanel();
+}
+
+/* ── Drag & Drop ── */
+['imgDrop','vidDrop'].forEach(id => {
+  const zone = document.getElementById(id);
+  if (!zone) return;
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag');
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    if (id === 'imgDrop' && file.type.startsWith('image/')) {
+      const r = new FileReader();
+      r.onload = ev => showImgPreview(ev.target.result);
+      r.readAsDataURL(file);
+    }
+    if (id === 'vidDrop' && file.type.startsWith('video/')) {
+      onVidFile({ files: [file] });
+    }
+  });
+});
+
+/* ── Clipboard paste (image) in parent window ── */
+document.addEventListener('paste', e => {
+  for (const item of (e.clipboardData?.items || [])) {
+    if (item.type.startsWith('image/')) {
+      const r = new FileReader();
+      r.onload = ev => { showImgPreview(ev.target.result); openPanel('image'); };
+      r.readAsDataURL(item.getAsFile());
+    }
+  }
+});
+
+/* ── Save / Export ── */
+function saveDraft() {
+  if (!fdoc) return;
+  try {
+    localStorage.setItem(DRAFT_KEY, '<!DOCTYPE html>\n' + fdoc.documentElement.outerHTML);
+    toast('Draft saved ✓', true);
+  } catch (_) { toast('Save failed — content may be too large', false); }
+}
+
+function checkDraft() {
+  if (localStorage.getItem(DRAFT_KEY)) document.getElementById('draftBanner').classList.add('show');
+}
+function discardDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+  document.getElementById('draftBanner').classList.remove('show');
+}
+function restoreDraft() {
+  const html = localStorage.getItem(DRAFT_KEY);
+  if (!html) return;
+  discardDraft();
+  frame.srcdoc = html;
+  frame.addEventListener('load', () => {
+    fwin = frame.contentWindow;
+    fdoc = frame.contentDocument || fwin.document;
+    setupFrame();
+    toast('Draft restored ✓', true);
+  }, { once: true });
+}
+
+function exportHTML() {
+  if (!fdoc) return;
+  /* Temporarily remove editor injection */
+  const injSt = fdoc.getElementById('__su_ed_style__');
+  if (injSt) injSt.remove();
+
+  const html = '<!DOCTYPE html>\n' + fdoc.documentElement.outerHTML;
+
+  /* Re-inject if still in edit mode */
+  if (editMode) injectStyles(true);
+
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([html], { type: 'text/html' })),
+    download: 'index.html'
+  });
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Exported — replace index.html with the downloaded file', true);
+}
+
+/* ── Utils ── */
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+let _toastTimer;
+function toast(msg, ok) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (ok ? ' ok' : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.className = '', 3600);
+}
+
+/* ── Global keyboard shortcuts ── */
+document.addEventListener('keydown', e => {
+  if ((e.metaKey||e.ctrlKey) && e.key === 's') { e.preventDefault(); saveDraft(); }
+  if (e.key === 'Escape') { closePanel(); hideSelbar(); }
+});
+</script>
+</body>
+</html>

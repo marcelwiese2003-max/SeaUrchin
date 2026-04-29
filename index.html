@@ -1,0 +1,2482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SeaUrchin Diving Center — Flic en Flac, Mauritius</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --deep:   #050f1a;
+      --abyss:  #081828;
+      --ocean:  #0b2035;
+      --mid:    #0e3350;
+      --teal:   #0a7a72;
+      --cyan:   #1bc8bc;
+      --sand:   #c4924f;
+      --cream:  #f0ebe3;
+      --text:   #c8c4be;
+      --muted:  #6a7a86;
+      --border: rgba(27,200,188,0.09);
+      --border-h: rgba(27,200,188,0.22);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--deep);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.75;
+      overflow-x: hidden;
+    }
+
+    /* Grain */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 1000; opacity: .3;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.07'/%3E%3C/svg%3E");
+    }
+
+    .display { font-family: 'Cormorant Garamond', serif; font-weight: 300; line-height: 1.05; letter-spacing: -0.02em; }
+
+    /* ── NAV ── */
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.6rem 3.5rem;
+      transition: background .5s, backdrop-filter .5s, border-bottom .5s, padding .3s;
+    }
+    #nav.stuck {
+      background: rgba(5,15,26,.9);
+      backdrop-filter: blur(16px) saturate(180%);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 3.5rem;
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem; font-weight: 400; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--cream); text-decoration: none;
+    }
+    .nav-logo b { color: var(--cyan); font-weight: 400; }
+    .nav-links { display: flex; gap: 2.2rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none;
+      font-size: .7rem; letter-spacing: .16em; text-transform: uppercase;
+      transition: color .2s; position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+      height: 1px; background: var(--cyan); transform: scaleX(0);
+      transform-origin: left; transition: transform .25s;
+    }
+    .nav-links a:hover { color: var(--cream); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+    .nav-cta {
+      padding: .55rem 1.4rem;
+      border: 1px solid rgba(27,200,188,.3); color: var(--cyan);
+      font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; text-decoration: none;
+      transition: background .25s, color .25s, border-color .25s;
+    }
+    .nav-cta:hover { background: var(--cyan); color: var(--deep); border-color: var(--cyan); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger span { width: 22px; height: 1px; background: var(--cream); display: block; }
+
+    /* ── HERO ── */
+    .hero { position: relative; min-height: 100vh; display: flex; align-items: center; overflow: hidden; }
+    .hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 40%; z-index: 0; opacity: .28; }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 1;
+      background:
+        radial-gradient(ellipse 90% 70% at 65% 35%, rgba(10,122,114,.22) 0%, transparent 55%),
+        radial-gradient(ellipse 55% 80% at 15% 75%, rgba(5,15,26,.82) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 90% 10%, rgba(8,24,40,.9) 0%, transparent 60%),
+        linear-gradient(180deg, rgba(5,15,26,.72) 0%, rgba(11,32,53,.55) 55%, rgba(5,15,26,.88) 100%);
+    }
+    .hero-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 80px, rgba(27,200,188,.022) 80px, rgba(27,200,188,.022) 81px);
+    }
+    #bubbles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .b {
+      position: absolute; bottom: -30px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, rgba(27,200,188,.22), rgba(27,200,188,.04));
+      border: 1px solid rgba(27,200,188,.2);
+      animation: rise linear infinite;
+    }
+    @keyframes rise {
+      0%   { transform: translateY(0) translateX(0) scale(.8); opacity: 0; }
+      8%   { opacity: 1; }
+      85%  { opacity: .5; }
+      100% { transform: translateY(-105vh) translateX(var(--dx)) scale(1.1); opacity: 0; }
+    }
+    .hero-inner {
+      position: relative; z-index: 2;
+      padding: 0 3.5rem; max-width: 1100px; width: 100%;
+    }
+    .hero-label {
+      display: flex; align-items: center; gap: .8rem;
+      font-size: .7rem; letter-spacing: .25em; text-transform: uppercase;
+      color: var(--cyan); margin-bottom: 2rem;
+      opacity: 0; animation: fadeUp .8s .4s ease forwards;
+    }
+    .hero-label::before { content: ''; width: 36px; height: 1px; background: var(--cyan); }
+    .hero-h1 {
+      font-size: clamp(4.5rem, 11vw, 10rem);
+      color: var(--cream); margin-bottom: 1.8rem;
+      opacity: 0; animation: fadeUp .9s .6s ease forwards;
+    }
+    .hero-h1 em { color: var(--cyan); font-style: italic; }
+    .hero-sub {
+      max-width: 460px; color: var(--muted); font-size: 1.05rem;
+      margin-bottom: 3.2rem; line-height: 1.8;
+      opacity: 0; animation: fadeUp .9s .8s ease forwards;
+    }
+    .hero-actions {
+      display: flex; gap: 1.2rem; align-items: center;
+      opacity: 0; animation: fadeUp .9s 1s ease forwards;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: .7rem;
+      padding: 1rem 2.6rem; background: var(--cyan); color: var(--deep);
+      text-decoration: none; font-size: .76rem; letter-spacing: .14em;
+      text-transform: uppercase; font-weight: 500;
+      transition: background .25s, transform .2s;
+    }
+    .btn-primary:hover { background: #3de0d4; transform: translateX(3px); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: .7rem;
+      padding: 1rem 2rem; border: 1px solid var(--border);
+      color: var(--text); text-decoration: none;
+      font-size: .76rem; letter-spacing: .14em; text-transform: uppercase;
+      transition: border-color .25s, color .25s;
+    }
+    .btn-ghost:hover { border-color: var(--border-h); color: var(--cream); }
+    .hero-corner {
+      position: absolute; bottom: 3rem; right: 3.5rem; z-index: 2;
+      text-align: right; opacity: 0; animation: fadeUp .8s 1.2s ease forwards;
+    }
+    .hero-corner p { font-size: .68rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); line-height: 2.2; }
+    .hero-corner .loc { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--cream); }
+    .scroll-hint {
+      position: absolute; bottom: 3rem; left: 3.5rem; z-index: 2;
+      display: flex; align-items: center; gap: .9rem;
+      font-size: .66rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted);
+      opacity: 0; animation: fadeUp .8s 1.4s ease forwards;
+    }
+    .scroll-track { width: 54px; height: 1px; background: rgba(106,122,134,.3); position: relative; overflow: hidden; }
+    .scroll-track::after {
+      content: ''; position: absolute; left: -100%; top: 0; width: 100%; height: 100%;
+      background: var(--cyan); animation: track 2.2s ease-in-out infinite;
+    }
+    @keyframes track { 0%{left:-100%} 50%{left:0} 100%{left:100%} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── SHARED ── */
+    .rule { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(27,200,188,.25), transparent); }
+    .section-label { font-size: .68rem; letter-spacing: .26em; text-transform: uppercase; color: var(--cyan); margin-bottom: 1.2rem; }
+    .accent { width: 52px; height: 1px; background: var(--cyan); margin: 2rem 0; }
+    .reveal { opacity: 0; transform: translateY(32px); transition: opacity .75s ease, transform .75s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+    .wrap { max-width: 1320px; margin: 0 auto; padding: 0 3.5rem; }
+
+    /* ── WHY US ── */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7rem; align-items: start; padding: 10rem 3.5rem; max-width: 1320px; margin: 0 auto; }
+    .about-text h2 { font-size: clamp(2.8rem, 5.5vw, 4.8rem); color: var(--cream); }
+    .about-text p { color: var(--muted); margin-bottom: 1.3rem; font-size: 1rem; }
+    .cert-strip { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 2.2rem; }
+    .cert {
+      padding: .32rem .85rem; border: 1px solid var(--border);
+      font-size: .66rem; letter-spacing: .13em; text-transform: uppercase; color: var(--muted);
+      transition: border-color .2s, color .2s;
+    }
+    .cert:hover { border-color: var(--border-h); color: var(--cyan); }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    .stat { padding: 2.8rem 2.5rem; background: rgba(11,32,53,.5); border: 1px solid var(--border); transition: background .3s, border-color .3s; }
+    .stat:hover { background: rgba(11,32,53,.8); border-color: var(--border-h); }
+    .stat-n { font-family: 'Cormorant Garamond', serif; font-size: 4.2rem; line-height: 1; color: var(--cyan); margin-bottom: .4rem; }
+    .stat-l { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+    /* Team */
+    .team-strip { margin-top: 4rem; display: flex; flex-direction: column; gap: 1px; }
+    .team-card { padding: 1.8rem 2rem; background: rgba(8,24,40,.5); border: 1px solid var(--border); display: flex; gap: 1.5rem; align-items: flex-start; transition: background .3s, border-color .3s; }
+    .team-card:hover { background: rgba(11,32,53,.7); border-color: var(--border-h); }
+    .team-avatar { width: 56px; height: 56px; border-radius: 50%; background: rgba(27,200,188,.12); border: 1px solid rgba(27,200,188,.25); display: flex; align-items: center; justify-content: center; color: var(--cyan); font-size: 1.1rem; flex-shrink: 0; object-fit: cover; object-position: top center; }
+    .team-name { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; color: var(--cream); margin-bottom: .15rem; }
+    .team-role { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--cyan); margin-bottom: .4rem; }
+    .team-bio { font-size: .84rem; color: var(--muted); line-height: 1.65; }
+
+    /* ── COURSE PHOTO STRIP ── */
+    .course-img { height: 150px; margin: -3rem -2.6rem 1.8rem; background-size: cover; background-position: center; position: relative; flex-shrink: 0; }
+    .course-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 30%, rgba(8,24,40,.85) 100%); }
+
+    /* ── SITE PHOTO STRIP ── */
+    .site-photos { display: flex; gap: 3px; overflow-x: auto; margin-bottom: 2rem; scrollbar-width: none; }
+    .site-photos::-webkit-scrollbar { display: none; }
+    .site-photo { flex-shrink: 0; width: 220px; height: 145px; object-fit: cover; opacity: .88; transition: opacity .3s, transform .3s; cursor: zoom-in; }
+    .site-photo:hover { opacity: 1; transform: scale(1.02); }
+
+    /* ── PHOTO GALLERY ── */
+    .gallery-wrap { padding: 8rem 0; overflow: hidden; }
+    .gallery-head { max-width: 1320px; margin: 0 auto 3rem; padding: 0 3.5rem; }
+    .gallery-head h2 { font-size: clamp(2.8rem, 5.5vw, 4.8rem); color: var(--cream); }
+    .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 210px; gap: 3px; }
+    .g-item { overflow: hidden; position: relative; }
+    .g-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s ease; }
+    .g-item:hover img { transform: scale(1.06); }
+    .g-item.tall { grid-row: span 2; }
+    .g-item.wide { grid-column: span 2; }
+    .g-caption { position: absolute; bottom: 0; left: 0; right: 0; padding: .6rem .9rem; background: linear-gradient(to top, rgba(5,15,26,.75) 0%, transparent 100%); font-size: .65rem; letter-spacing: .13em; text-transform: uppercase; color: rgba(240,235,227,.65); opacity: 0; transition: opacity .3s; pointer-events: none; }
+    .g-item:hover .g-caption { opacity: 1; }
+    @media (max-width: 900px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } .g-item.wide { grid-column: span 1; } }
+    @media (max-width: 540px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 140px; } }
+
+    /* ── COURSES ── */
+    .courses-wrap { padding: 8rem 3.5rem; background: linear-gradient(180deg, transparent, rgba(11,32,53,.14) 50%, transparent); }
+    .courses-head { max-width: 1320px; margin: 0 auto 4rem; display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; }
+    .courses-head h2 { font-size: clamp(2.8rem, 5.5vw, 4.8rem); color: var(--cream); }
+    .courses-head-note { max-width: 300px; color: var(--muted); font-size: .9rem; text-align: right; }
+    .courses-grid { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+    .course {
+      padding: 3rem 2.6rem 2.6rem;
+      background: rgba(8,24,40,.65); border: 1px solid var(--border);
+      position: relative; overflow: hidden; display: flex; flex-direction: column;
+      transition: border-color .35s, background .35s, transform .3s;
+    }
+    .course::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--teal), var(--cyan)); transform: scaleX(0); transform-origin: left; transition: transform .4s; }
+    .course:hover { border-color: var(--border-h); background: rgba(11,32,53,.8); transform: translateY(-5px); }
+    .course:hover::after { transform: scaleX(1); }
+    .course-no { font-size: .7rem; letter-spacing: .14em; color: var(--cyan); opacity: .55; margin-bottom: 1.6rem; }
+    .course h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 400; color: var(--cream); margin-bottom: .9rem; line-height: 1.2; }
+    .course p { font-size: .88rem; color: var(--muted); line-height: 1.75; flex-grow: 1; }
+    .course-meta { margin-top: 1.6rem; display: flex; flex-wrap: wrap; gap: .4rem; }
+    .tag { padding: .22rem .65rem; background: rgba(27,200,188,.07); border: 1px solid rgba(27,200,188,.15); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--cyan); }
+    .course-price { margin-top: 1.4rem; font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--cream); }
+    .course-price span { font-family: 'DM Sans', sans-serif; font-size: .8rem; color: var(--muted); letter-spacing: .06em; }
+    .course-glyph { position: absolute; bottom: 1.6rem; right: 1.8rem; font-size: 2.2rem; opacity: .1; transition: opacity .3s, transform .3s; pointer-events: none; }
+    .course:hover .course-glyph { opacity: .32; transform: scale(1.15) rotate(5deg); }
+
+    /* ── DIVE SITES ── */
+    .sites-wrap { max-width: 1320px; margin: 0 auto; padding: 8rem 3.5rem; }
+    .sites-head { margin-bottom: 4rem; }
+    .sites-head h2 { font-size: clamp(2.8rem, 5.5vw, 4.8rem); color: var(--cream); }
+    .sites-head p { color: var(--muted); max-width: 500px; margin-top: 1.5rem; }
+
+    /* Tab system */
+    .tabs { display: flex; gap: 2px; margin-bottom: 2px; }
+    .tab-btn {
+      padding: .8rem 1.8rem; background: rgba(8,24,40,.7); border: 1px solid var(--border);
+      color: var(--muted); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+      cursor: pointer; transition: background .25s, color .25s, border-color .25s;
+    }
+    .tab-btn:hover { color: var(--cream); border-color: var(--border-h); }
+    .tab-btn.active { background: rgba(27,200,188,.1); border-color: rgba(27,200,188,.35); color: var(--cyan); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    .site { display: flex; align-items: flex-start; gap: 1.8rem; padding: 2.2rem 2rem; border: 1px solid var(--border); transition: background .3s, border-color .3s; }
+    .site:hover { background: rgba(11,32,53,.35); border-color: var(--border-h); }
+    .site-no { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 300; color: var(--teal); opacity: .35; line-height: 1; min-width: 2.2rem; }
+    .site h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.45rem; color: var(--cream); margin-bottom: .25rem; }
+    .site p { font-size: .84rem; color: var(--muted); line-height: 1.65; }
+    .site-depth { font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--cyan); margin-bottom: .3rem; }
+
+    /* ── A DAY AT SEAURCHIN ── */
+    .day-wrap { max-width: 1320px; margin: 0 auto; padding: 8rem 3.5rem; display: grid; grid-template-columns: 1fr 1.2fr; gap: 6rem; align-items: start; }
+    .day-wrap h2 { font-size: clamp(2.8rem, 5.5vw, 4.8rem); color: var(--cream); }
+    .day-wrap > div > p { color: var(--muted); font-size: 1rem; margin-bottom: 1.3rem; }
+    .hours-box { margin-top: 2.5rem; padding: 1.8rem 2rem; background: rgba(8,24,40,.6); border: 1px solid var(--border); display: inline-block; }
+    .hours-box p { font-size: .82rem; color: var(--muted); }
+    .hours-box strong { color: var(--cream); }
+    .timeline { display: flex; flex-direction: column; gap: 2px; }
+    .tl-item { display: flex; gap: 2rem; padding: 2rem; border: 1px solid var(--border); transition: background .3s, border-color .3s; }
+    .tl-item:hover { background: rgba(11,32,53,.35); border-color: var(--border-h); }
+    .tl-time { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--cyan); opacity: .7; line-height: 1; min-width: 4.5rem; padding-top: .2rem; white-space: nowrap; }
+    .tl-item h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--cream); margin-bottom: .3rem; }
+    .tl-item p { font-size: .84rem; color: var(--muted); line-height: 1.65; }
+
+    /* ── PRICES ── */
+    .prices-wrap { padding: 8rem 3.5rem; background: linear-gradient(180deg, transparent, rgba(11,32,53,.14) 50%, transparent); }
+    .prices-head { max-width: 1320px; margin: 0 auto 4rem; }
+    .prices-head h2 { font-size: clamp(2.8rem, 5.5vw, 4.8rem); color: var(--cream); }
+    .prices-head p { color: var(--muted); max-width: 480px; margin-top: 1rem; }
+
+    .price-tabs { display: flex; gap: 2px; margin-bottom: 2px; max-width: 1320px; margin-left: auto; margin-right: auto; margin-bottom: 2px; }
+    .price-content { max-width: 1320px; margin: 0 auto; }
+
+    .price-panel { display: none; }
+    .price-panel.active { display: block; }
+
+    .price-group { margin-bottom: 2px; }
+    .price-group-title { padding: 1.2rem 2rem; background: rgba(27,200,188,.06); border: 1px solid var(--border); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--cyan); }
+    .price-rows { display: grid; gap: 2px; }
+    .price-row { display: flex; justify-content: space-between; align-items: center; padding: 1.3rem 2rem; background: rgba(8,24,40,.55); border: 1px solid var(--border); transition: background .25s, border-color .25s; }
+    .price-row:hover { background: rgba(11,32,53,.7); border-color: var(--border-h); }
+    .price-name { font-size: .95rem; color: var(--text); }
+    .price-sub { font-size: .78rem; color: var(--muted); margin-top: .1rem; }
+    .price-val { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--cream); white-space: nowrap; }
+    .price-val small { font-family: 'DM Sans', sans-serif; font-size: .78rem; color: var(--muted); letter-spacing: .06em; }
+    .price-note { margin-top: 2rem; padding: 1.4rem 2rem; border: 1px solid rgba(196,146,79,.2); font-size: .84rem; color: var(--muted); background: rgba(196,146,79,.04); }
+    .price-note strong { color: var(--sand); }
+
+    /* ── Expandable course rows ── */
+    details.price-expand { background: rgba(8,24,40,.55); border: 1px solid var(--border); transition: background .25s, border-color .25s; }
+    details.price-expand + details.price-expand { margin-top: 2px; }
+    details.price-expand[open] { background: rgba(11,32,53,.75); border-color: var(--border-h); }
+    details.price-expand summary {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.3rem 2rem; cursor: pointer; list-style: none; gap: 1rem;
+    }
+    details.price-expand summary::-webkit-details-marker { display: none; }
+    details.price-expand summary::marker { display: none; }
+    details.price-expand summary:hover { background: rgba(27,200,188,.03); }
+    .pe-left { display: flex; flex-direction: column; }
+    .pe-right { display: flex; align-items: center; gap: 1.2rem; flex-shrink: 0; }
+    .pe-toggle {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 1px solid var(--border); color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .95rem; line-height: 1; flex-shrink: 0;
+      transition: border-color .2s, color .2s, transform .28s;
+    }
+    details.price-expand[open] .pe-toggle { border-color: rgba(27,200,188,.4); color: var(--cyan); transform: rotate(45deg); }
+    .pe-body {
+      padding: 0 2rem 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .pe-desc { font-size: .88rem; color: var(--muted); line-height: 1.8; margin-top: 1.1rem; margin-bottom: 1.1rem; }
+    .pe-tags { display: flex; flex-wrap: wrap; gap: .35rem; }
+    .pe-tag {
+      padding: .18rem .65rem; background: rgba(27,200,188,.06); border: 1px solid rgba(27,200,188,.15);
+      font-size: .63rem; letter-spacing: .1em; text-transform: uppercase; color: var(--cyan);
+    }
+    .pe-tag.warm { background: rgba(196,146,79,.06); border-color: rgba(196,146,79,.2); color: var(--sand); }
+    @media (max-width: 540px) {
+      details.price-expand summary { padding: 1rem 1.2rem; }
+      .pe-body { padding: 0 1.2rem 1.2rem; }
+    }
+
+    /* 2-col price grid */
+    .price-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+
+    /* ── PROMOTIONS ── */
+
+    /* ── FAQ ── */
+    .faq-wrap { padding: 8rem 3.5rem; background: linear-gradient(180deg, transparent, rgba(11,32,53,.1) 50%, transparent); }
+    .faq-head { max-width: 1320px; margin: 0 auto 4rem; }
+    .faq-head h2 { font-size: clamp(2.8rem, 5.5vw, 4.8rem); color: var(--cream); }
+    .faq-grid { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    details {
+      background: rgba(8,24,40,.55); border: 1px solid var(--border);
+      transition: background .25s, border-color .25s;
+    }
+    details:hover { border-color: var(--border-h); }
+    details[open] { background: rgba(11,32,53,.7); border-color: var(--border-h); }
+    summary {
+      padding: 1.6rem 2rem; list-style: none; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;
+      font-size: .95rem; color: var(--cream); line-height: 1.5;
+      user-select: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '+'; color: var(--cyan); font-size: 1.2rem; line-height: 1; flex-shrink: 0; margin-top: .05rem; transition: transform .25s; }
+    details[open] summary::after { transform: rotate(45deg); }
+    .faq-ans { padding: 0 2rem 1.6rem; font-size: .88rem; color: var(--muted); line-height: 1.8; }
+
+    /* ── BLOG ── */
+    .blog-wrap { padding: 8rem 3.5rem; }
+    .blog-head { max-width: 1320px; margin: 0 auto 4rem; }
+    .blog-head h2 { font-size: clamp(2.8rem, 5.5vw, 4.8rem); color: var(--cream); }
+    .blog-grid {
+      max-width: 1320px; margin: 0 auto;
+      display: grid; grid-template-columns: 5fr 3fr 3fr;
+      grid-template-rows: auto auto; gap: 2px;
+    }
+    .post { padding: 2.8rem; background: rgba(8,24,40,.5); border: 1px solid var(--border); transition: background .3s, border-color .3s; }
+    .post:hover { background: rgba(11,32,53,.7); border-color: var(--border-h); }
+    .post.hero-post { grid-row: 1 / 3; }
+    .post-tag { font-size: .66rem; letter-spacing: .18em; text-transform: uppercase; color: var(--sand); margin-bottom: 1rem; }
+    .post h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.55rem; color: var(--cream); line-height: 1.3; margin-bottom: .9rem; }
+    .post.hero-post h3 { font-size: 2.5rem; }
+    .post p { font-size: .87rem; color: var(--muted); line-height: 1.75; }
+    .post-link {
+      display: inline-flex; align-items: center; gap: .5rem; margin-top: 1.5rem;
+      font-size: .7rem; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--cyan); text-decoration: none; transition: gap .2s;
+    }
+    .post-link:hover { gap: .9rem; }
+
+    /* ── CONTACT ── */
+    .contact-wrap { padding: 10rem 3.5rem; border-top: 1px solid var(--border); }
+    .contact-inner { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 7rem; align-items: start; }
+    .contact-left h2 { font-size: clamp(2.8rem, 5.5vw, 4.8rem); color: var(--cream); margin-bottom: 1.4rem; }
+    .contact-left > p { color: var(--muted); max-width: 400px; }
+    .c-items { display: flex; flex-direction: column; gap: 1.8rem; margin-top: 3rem; }
+    .c-item { display: flex; align-items: flex-start; gap: 1.4rem; }
+    .c-icon { width: 42px; height: 42px; flex-shrink: 0; border: 1px solid rgba(27,200,188,.2); display: flex; align-items: center; justify-content: center; color: var(--cyan); }
+    .c-label { font-size: .66rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: .2rem; }
+    .c-val { color: var(--cream); font-size: .98rem; }
+    .c-val a { color: var(--cream); text-decoration: none; transition: color .2s; }
+    .c-val a:hover { color: var(--cyan); }
+    .socials { display: flex; gap: .8rem; margin-top: 3rem; }
+    .soc { width: 46px; height: 46px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--muted); text-decoration: none; font-size: .72rem; letter-spacing: .06em; transition: border-color .2s, color .2s, background .2s; }
+    .soc:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(27,200,188,.06); }
+    .hours-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 2.5rem; }
+    .hour-cell { padding: 1.4rem 1.6rem; background: rgba(8,24,40,.55); border: 1px solid var(--border); }
+    .hour-day { font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: .3rem; }
+    .hour-time { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--cream); }
+
+    /* ── FOOTER ── */
+    footer { padding: 2rem 3.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-copy { font-size: .72rem; color: var(--muted); letter-spacing: .06em; }
+    .footer-nav { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .footer-nav a { font-size: .72rem; color: var(--muted); text-decoration: none; letter-spacing: .06em; transition: color .2s; }
+    .footer-nav a:hover { color: var(--cyan); }
+
+    /* ── MOBILE MENU ── */
+    #mob-menu { display: none; position: fixed; inset: 0; z-index: 190; background: rgba(5,15,26,.97); backdrop-filter: blur(12px); flex-direction: column; justify-content: center; align-items: center; gap: 2.2rem; }
+    #mob-menu.open { display: flex; }
+    #mob-menu a { font-family: 'Cormorant Garamond', serif; font-size: 2.4rem; color: var(--cream); text-decoration: none; transition: color .2s; }
+    #mob-menu a:hover { color: var(--cyan); }
+    #mob-close { position: absolute; top: 1.6rem; right: 1.8rem; background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; line-height: 1; transition: color .2s; }
+    #mob-close:hover { color: var(--cream); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      #nav { padding: 1.2rem 1.6rem; }
+      #nav.stuck { padding: .9rem 1.6rem; }
+      .nav-links, .nav-cta { display: none; }
+      .hamburger { display: flex; }
+      .hero-inner { padding: 0 1.6rem; }
+      .hero-corner, .scroll-hint { display: none; }
+      .about-grid { grid-template-columns: 1fr; gap: 4rem; padding: 6rem 1.6rem; }
+      .courses-wrap { padding: 6rem 1.6rem; }
+      .courses-head { flex-direction: column; align-items: flex-start; }
+      .courses-head-note { text-align: left; max-width: 100%; }
+      .courses-grid { grid-template-columns: 1fr; }
+      .sites-wrap { padding: 6rem 1.6rem; }
+      .tab-panel.active { grid-template-columns: 1fr; }
+      .day-wrap { grid-template-columns: 1fr; gap: 4rem; padding: 6rem 1.6rem; }
+      .prices-wrap { padding: 6rem 1.6rem; }
+      .price-2col { grid-template-columns: 1fr; }
+
+      .faq-wrap { padding: 6rem 1.6rem; }
+      .faq-grid { grid-template-columns: 1fr; }
+      .blog-wrap { padding: 6rem 1.6rem; }
+      .blog-grid { grid-template-columns: 1fr; }
+      .post.hero-post { grid-row: auto; }
+      .contact-wrap { padding: 6rem 1.6rem; }
+      .contact-inner { grid-template-columns: 1fr; gap: 4rem; }
+      .hours-grid { grid-template-columns: 1fr; }
+      footer { flex-direction: column; text-align: center; padding: 2rem 1.6rem; }
+      .footer-nav { justify-content: center; }
+    }
+    @media (max-width: 540px) {
+
+      .price-row { flex-direction: column; align-items: flex-start; gap: .3rem; }
+    }
+
+    /* ── Post Modal ── */
+    .post-modal {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(5,15,26,.94); backdrop-filter: blur(16px);
+      display: none; overflow-y: auto; padding: 2rem 1.5rem;
+    }
+    .post-modal.open { display: block; }
+    .post-modal-box {
+      max-width: 780px; margin: 5rem auto 5rem;
+      background: rgba(8,24,40,.9); border: 1px solid var(--border-h);
+      padding: 3.5rem 4rem; position: relative;
+    }
+    @media(max-width:640px){ .post-modal-box{ padding:2rem 1.5rem; margin:3rem auto; } }
+    .post-modal-close {
+      position: absolute; top: 1.4rem; right: 1.4rem;
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      width: 36px; height: 36px; font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .2s, color .2s;
+    }
+    .post-modal-close:hover { border-color: var(--border-h); color: var(--cream); }
+    .modal-tag { font-size: .68rem; letter-spacing: .2em; text-transform: uppercase; color: var(--sand); margin-bottom: 1.2rem; }
+    .modal-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: clamp(2rem,5vw,3.2rem); color: var(--cream); line-height: 1.1; margin-bottom: 1rem; }
+    .modal-meta { font-size: .76rem; color: var(--muted); letter-spacing: .08em; margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+    .modal-body h2 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 1.9rem; color: var(--cream); margin: 2rem 0 .8rem; line-height: 1.2; }
+    .modal-body h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--cream); margin: 1.6rem 0 .6rem; }
+    .modal-body p { color: var(--text); margin-bottom: 1.2rem; line-height: 1.85; }
+    .modal-body strong { color: var(--cream); font-weight: 500; }
+    .modal-body em { color: var(--cyan); font-style: italic; }
+    .modal-body ul, .modal-body ol { padding-left: 1.5rem; margin-bottom: 1.3rem; }
+    .modal-body li { color: var(--text); margin-bottom: .45rem; line-height: 1.75; }
+    .modal-body blockquote { border-left: 2px solid var(--cyan); padding: .2rem 0 .2rem 1.4rem; margin: 1.8rem 0; color: var(--muted); font-style: italic; }
+    .modal-body hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+    .modal-body a { color: var(--cyan); text-underline-offset: 3px; }
+    .modal-body code { background: rgba(27,200,188,.08); color: var(--cyan); padding: .1rem .4rem; font-size: .85em; border-radius: 2px; }
+    .modal-body pre { background: rgba(5,15,26,.8); border: 1px solid var(--border); padding: 1.4rem; margin-bottom: 1.4rem; overflow-x: auto; }
+    .modal-body pre code { background: none; padding: 0; color: var(--text); }
+
+    /* Blog post card cursor */
+    .post { cursor: pointer; }
+    .blog-empty { padding: 3rem; color: var(--muted); font-size: .95rem; border: 1px solid var(--border); text-align: center; }
+
+    /* ── BOOKING SECTION ── */
+    #book { position: relative; overflow: hidden; }
+    .book-bg {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 60% at 80% 50%, rgba(10,122,114,.13) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 70% at 10% 30%, rgba(11,32,53,.6) 0%, transparent 55%);
+    }
+    .book-wrap { max-width: 1320px; margin: 0 auto; padding: 9rem 3.5rem; position: relative; z-index: 2; display: grid; grid-template-columns: 1fr 1.1fr; gap: 8rem; align-items: start; }
+    .book-left h2 { font-size: clamp(2.8rem, 5.2vw, 4.5rem); color: var(--cream); margin-bottom: 1.5rem; }
+    .book-left p { color: var(--muted); line-height: 1.85; margin-bottom: 1.4rem; }
+    .book-features { margin-top: 2.5rem; display: flex; flex-direction: column; gap: .85rem; }
+    .book-feat { display: flex; align-items: flex-start; gap: .9rem; font-size: .88rem; color: var(--muted); }
+    .book-feat-icon { width: 22px; height: 22px; border-radius: 50%; background: rgba(27,200,188,.1); border: 1px solid rgba(27,200,188,.22); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .book-feat-icon svg { display: block; }
+
+    /* ── Booking form card ── */
+    .book-card { background: rgba(8,24,40,.8); border: 1px solid var(--border); padding: 3rem; backdrop-filter: blur(8px); }
+
+    /* Step indicators */
+    .book-steps { display: flex; align-items: center; gap: 0; margin-bottom: 2.5rem; }
+    .book-step-item { display: flex; align-items: center; gap: .55rem; }
+    .book-step-dot { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: .65rem; letter-spacing: .06em; color: var(--muted); flex-shrink: 0; transition: background .3s, border-color .3s, color .3s; }
+    .book-step-dot.done   { background: rgba(27,200,188,.15); border-color: rgba(27,200,188,.45); color: var(--cyan); }
+    .book-step-dot.active { background: var(--cyan); border-color: var(--cyan); color: var(--deep); }
+    .book-step-label { font-size: .64rem; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); white-space: nowrap; transition: color .3s; }
+    .book-step-label.active { color: var(--cream); }
+    .book-step-line { flex: 1; height: 1px; background: var(--border); margin: 0 .6rem; min-width: 18px; }
+
+    /* Step panels */
+    .book-panel { display: none; }
+    .book-panel.active { display: block; }
+
+    /* Service grid */
+    .svc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 1.2rem; }
+    .svc-btn {
+      padding: 1rem .9rem; background: rgba(5,15,26,.6); border: 1px solid var(--border);
+      color: var(--muted); text-align: left; cursor: pointer;
+      transition: border-color .2s, background .2s, color .2s;
+      font-family: 'DM Sans', sans-serif; font-size: .82rem; font-weight: 300;
+    }
+    .svc-btn:hover { border-color: var(--border-h); color: var(--text); background: rgba(11,32,53,.6); }
+    .svc-btn.sel { border-color: rgba(27,200,188,.45); color: var(--cream); background: rgba(27,200,188,.07); }
+    .svc-btn b { display: block; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 400; color: var(--cream); margin-bottom: .25rem; }
+    .svc-btn.sel b { color: var(--cyan); }
+    .svc-price { font-size: .75rem; color: var(--cyan); margin-top: .4rem; opacity: .8; }
+
+    /* Form fields */
+    .book-row { margin-bottom: 1.1rem; }
+    .book-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+    .book-label { display: block; font-size: .62rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-bottom: .45rem; }
+    .book-input, .book-select, .book-textarea {
+      width: 100%; padding: .7rem .9rem;
+      background: rgba(5,15,26,.7); border: 1px solid var(--border);
+      color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: .88rem; font-weight: 300;
+      outline: none; transition: border-color .2s, background .2s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .book-input:focus, .book-select:focus, .book-textarea:focus { border-color: var(--border-h); background: rgba(8,24,40,.85); }
+    .book-input::placeholder, .book-textarea::placeholder { color: var(--muted); }
+    .book-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236a7a86' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .85rem center; padding-right: 2.2rem; }
+    .book-select option { background: #0b2035; }
+    .book-textarea { resize: vertical; min-height: 80px; }
+
+    /* People counter */
+    .people-counter { display: flex; align-items: center; gap: 0; border: 1px solid var(--border); width: fit-content; }
+    .pctr-btn { width: 36px; height: 38px; background: rgba(5,15,26,.7); border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; transition: background .2s, color .2s; display: flex; align-items: center; justify-content: center; }
+    .pctr-btn:hover { background: rgba(27,200,188,.1); color: var(--cyan); }
+    .pctr-val { width: 46px; height: 38px; text-align: center; background: rgba(5,15,26,.5); border: none; border-left: 1px solid var(--border); border-right: 1px solid var(--border); color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: .9rem; outline: none; }
+
+    /* Nav buttons */
+    .book-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1.8rem; gap: 1rem; }
+    .book-back { background: none; border: 1px solid var(--border); color: var(--muted); padding: .7rem 1.4rem; font-family: 'DM Sans', sans-serif; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; transition: border-color .2s, color .2s; }
+    .book-back:hover { border-color: var(--border-h); color: var(--cream); }
+    .book-next { background: var(--cyan); border: none; color: var(--deep); padding: .75rem 2rem; font-family: 'DM Sans', sans-serif; font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 500; cursor: pointer; transition: background .22s, transform .18s; display: flex; align-items: center; gap: .6rem; }
+    .book-next:hover { background: #3de0d4; transform: translateX(2px); }
+    .book-next:disabled { background: rgba(106,122,134,.3); color: var(--muted); cursor: not-allowed; transform: none; }
+
+    /* Confirmation step */
+    .book-confirm-row { display: flex; justify-content: space-between; padding: .65rem 0; border-bottom: 1px solid var(--border); font-size: .85rem; }
+    .book-confirm-row:last-child { border-bottom: none; }
+    .book-confirm-key { color: var(--muted); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; }
+    .book-confirm-val { color: var(--cream); text-align: right; max-width: 60%; }
+
+    /* Success state */
+    .book-success { text-align: center; padding: 1rem 0 .5rem; }
+    .book-success-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(27,200,188,.1); border: 1px solid rgba(27,200,188,.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
+    .book-success h3 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--cream); margin-bottom: .8rem; }
+    .book-success p { color: var(--muted); font-size: .9rem; line-height: 1.8; }
+    .book-ref { display: inline-block; margin-top: 1.2rem; padding: .4rem 1rem; background: rgba(27,200,188,.08); border: 1px solid rgba(27,200,188,.22); color: var(--cyan); font-size: .76rem; letter-spacing: .18em; }
+    .book-error { padding: .75rem .9rem; background: rgba(224,82,82,.08); border: 1px solid rgba(224,82,82,.25); color: #e05252; font-size: .82rem; margin-bottom: 1rem; display: none; }
+
+    @media (max-width: 900px) {
+      .book-wrap { grid-template-columns: 1fr; gap: 4rem; padding: 6rem 1.6rem; }
+      .svc-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 540px) {
+      .book-card { padding: 1.8rem 1.2rem; }
+      .svc-grid { grid-template-columns: 1fr; }
+      .book-row-2 { grid-template-columns: 1fr; }
+      .book-steps { gap: 0; }
+      .book-step-label { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Mobile menu -->
+<div id="mob-menu" role="dialog" aria-modal="true">
+  <button id="mob-close" onclick="closeMob()" aria-label="Close menu">✕</button>
+  <a href="#about"   onclick="closeMob()">Why Us</a>
+  <a href="#courses" onclick="closeMob()">Courses</a>
+  <a href="#sites"   onclick="closeMob()">Dive Sites</a>
+  <a href="#prices"  onclick="closeMob()">Prices</a>
+  <a href="#faq"     onclick="closeMob()">FAQ</a>
+  <a href="#contact" onclick="closeMob()">Contact</a>
+  <a href="#book"    onclick="closeMob()">Book Online</a>
+</div>
+
+<!-- Nav -->
+<nav id="nav">
+  <a href="#" class="nav-logo">Sea<b>Urchin</b></a>
+  <ul class="nav-links">
+    <li><a href="#about">Why Us</a></li>
+    <li><a href="#courses">Courses</a></li>
+    <li><a href="#sites">Dive Sites</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#prices">Prices</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#book" class="nav-cta">Book a Dive</a>
+  <div class="hamburger" onclick="openMob()" role="button" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero">
+  <img class="hero-photo" src="images/DSC_12767.jpg" alt="Diving in Mauritius" loading="eager">
+  <div class="hero-bg"></div>
+  <div id="bubbles"></div>
+  <div class="hero-inner">
+    <p class="hero-label">Flic en Flac &nbsp;·&nbsp; Mauritius &nbsp;·&nbsp; Indian Ocean</p>
+    <h1 class="hero-h1 display">
+      Dive into<br>
+      the <em>deep</em><br>
+      blue
+    </h1>
+    <p class="hero-sub">
+      SeaUrchin Diving Center — Mauritius's only SSI Diamond Instructor Trainer Center.
+      Professional, intimate, and deeply committed to the ocean.
+    </p>
+    <div class="hero-actions">
+      <a href="#courses" class="btn-primary">
+        Explore Courses
+        <svg width="15" height="9" viewBox="0 0 15 9" fill="none"><path d="M1 4.5H14M10 1L14 4.5L10 8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#prices" class="btn-ghost">View Prices</a>
+    </div>
+  </div>
+  <div class="hero-corner">
+    <p>Operating</p>
+    <p class="loc">Since 2006</p>
+    <p>Flic en Flac</p>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-track"></div>
+    Scroll
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ═══════════════ WHY US ═══════════════ -->
+<section id="about">
+  <div class="about-grid">
+    <div class="reveal">
+      <p class="section-label">Why SeaUrchin</p>
+      <h2 class="display">Mauritius's most<br>certified dive school</h2>
+      <div class="accent"></div>
+      <p>
+        Under German management since 2006, SeaUrchin is the only
+        <strong style="color:var(--cream)">SSI Diamond Instructor Trainer Center</strong> in Mauritius —
+        and the island's sole female-owned diving school.
+        We hold SSI, PADI, and CMAS certifications simultaneously.
+      </p>
+      <p>
+        Groups are capped at <strong style="color:var(--cream)">six divers maximum</strong> so every guest
+        receives genuine personal attention. Our philosophy: individual, highly professional,
+        and with total commitment to the environment.
+      </p>
+      <p>
+        Instruction in English, German, French, and Danish.
+        Post-dive, you'll find hot beverages, showers, and good conversation waiting.
+      </p>
+      <div class="cert-strip">
+        <span class="cert">SSI Diamond</span>
+        <span class="cert">PADI</span>
+        <span class="cert">CMAS / IDA</span>
+        <span class="cert">MSDA Mauritius</span>
+        <span class="cert">Instructor Trainer</span>
+        <span class="cert">Max 6 divers</span>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-n">25+</div>
+          <div class="stat-l">Dive Sites</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">6</div>
+          <div class="stat-l">Course Pathways</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">3</div>
+          <div class="stat-l">Cert. Standards</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">4</div>
+          <div class="stat-l">Languages</div>
+        </div>
+      </div>
+
+      <div class="team-strip">
+        <div class="team-card">
+          <img class="team-avatar" src="images/IMG_0852sharp-col-cut.jpg" alt="Katharina Dohmann">
+          <div>
+            <div class="team-name">Katharina Dohmann</div>
+            <div class="team-role">Founder &amp; SSI Instructor Trainer #57975</div>
+            <div class="team-bio">Established SeaUrchin in 2006. Holds SSI Instructor Trainer and multiple CMAS certifications across rescue, mermaid, and specialty disciplines. Champion of women and family diving.</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <img class="team-avatar" src="images/Khaleah-und-Shakira.jpg" alt="Khaleah and Shakira Dohmann">
+          <div>
+            <div class="team-name">Khaleah &amp; Shakira Dohmann</div>
+            <div class="team-role">SSI Instructors — Second Generation</div>
+            <div class="team-bio">Grew up on the reef. Fully certified SSI instructors continuing the family tradition of personal, passionate dive education.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ═══════════════ COURSES ═══════════════ -->
+<section id="courses">
+  <div class="courses-wrap">
+    <div class="courses-head reveal">
+      <div>
+        <p class="section-label">Training &amp; Education</p>
+        <h2 class="display">Find your<br>depth</h2>
+      </div>
+      <p class="courses-head-note">
+        SSI · PADI · CMAS — internationally recognised certifications
+        for every level, from first breath to professional instructor.
+      </p>
+    </div>
+
+    <div class="courses-grid">
+
+      <div class="course reveal">
+        <div class="course-img" style="background-image:url('images/Diving-Mauritius-SeaUrchin-DC-DSC00017_4-3.jpg')"></div>
+        <div class="course-no">01 &nbsp;/&nbsp; 06</div>
+        <h3>Learn to Scuba Dive</h3>
+        <p>Your first breath underwater. Theoretical preparation (available online), pool exercises in the Flic en Flac Lagoon, then a guided open-water dive at a beginner-friendly site. All you need is a swimsuit and enthusiasm.</p>
+        <div class="course-meta">
+          <span class="tag">Daily 8 am</span>
+          <span class="tag">Mon – Sat</span>
+          <span class="tag">24h booking</span>
+          <span class="tag">Equip. included</span>
+        </div>
+        <div class="course-price">€70 <span>trial dive incl. equipment &amp; insurance</span></div>
+        <div class="course-glyph">🤿</div>
+      </div>
+
+      <div class="course reveal">
+        <div class="course-img" style="background-image:url('images/DSC_8073-e1544972173219-1024x682.jpg')"></div>
+        <div class="course-no">02 &nbsp;/&nbsp; 06</div>
+        <h3>Dive Training &amp; Courses</h3>
+        <p>Open Water Diver (4 days, 4 ocean dives + exam) through Advanced, Rescue, and specialty certifications — Deep Diver to 40m, Wreck, Navigation, Nitrox, Night Diving, and marine ecology programs. SSI, PADI, or CMAS.</p>
+        <div class="course-meta">
+          <span class="tag">OWD from €450</span>
+          <span class="tag">AOWD from €390</span>
+          <span class="tag">SSI · PADI · CMAS</span>
+        </div>
+        <div class="course-glyph">📋</div>
+      </div>
+
+      <div class="course reveal">
+        <div class="course-img" style="background-image:url('images/Khaleah-und-Shakira.jpg');background-position:center top"></div>
+        <div class="course-no">03 &nbsp;/&nbsp; 06</div>
+        <h3>Women &amp; Kids</h3>
+        <p>As Mauritius's only female-owned dive school, we understand the barriers women face and build courses around individual confidence. Children join from age 8 (playful lagoon intro) and can certify Junior OWD from age 10.</p>
+        <div class="course-meta">
+          <span class="tag">From age 8</span>
+          <span class="tag">Junior OWD €450</span>
+          <span class="tag">Scuba Explorers €125</span>
+          <span class="tag">Female-owned</span>
+        </div>
+        <div class="course-glyph">🌊</div>
+      </div>
+
+      <div class="course reveal">
+        <div class="course-img" style="background-image:url('images/mermaid.jpg')"></div>
+        <div class="course-no">04 &nbsp;/&nbsp; 06</div>
+        <h3>Mermaid Courses</h3>
+        <p>From a first splash to advanced open-water freediving with a monofin. Five levels: Try Mermaid · Mermaid (certified) · Ocean Mermaid to 5m · Model Mermaid · Mermaid Instructor. Professional photography included in every course.</p>
+        <div class="course-meta">
+          <span class="tag">5 levels</span>
+          <span class="tag">SSI partner</span>
+          <span class="tag">Photo included</span>
+          <span class="tag">All ages</span>
+        </div>
+        <div class="course-glyph">🧜</div>
+      </div>
+
+      <div class="course reveal">
+        <div class="course-img" style="background-image:url('images/master-diver-1024x683.jpg')"></div>
+        <div class="course-no">05 &nbsp;/&nbsp; 06</div>
+        <h3>DivePro Training</h3>
+        <p>Turn passion into profession. A <strong style="color:var(--cream)">free 3-month Divemaster internship</strong> — 6 days/week training under an SSI Instructor Trainer or PADI Instructor. Start dates: August, October, December, February.</p>
+        <div class="course-meta">
+          <span class="tag">Free internship</span>
+          <span class="tag">40 dives req.</span>
+          <span class="tag">18+ · Rescue cert</span>
+          <span class="tag">DM €1,000</span>
+        </div>
+        <div class="course-glyph">⭐</div>
+      </div>
+
+      <div class="course reveal">
+        <div class="course-img" style="background-image:url('images/mii-TianXiang-45mt-1024x683.jpg')"></div>
+        <div class="course-no">06 &nbsp;/&nbsp; 06</div>
+        <h3>Technical Diving</h3>
+        <p>Extended Range Nitrox to 40m (from 16), Extended Range to 45m using nitrox up to 100% (from 18, 50 dives required), and Advanced Wreck Diving with overhead environment penetration (from 12). All under SSI framework.</p>
+        <div class="course-meta">
+          <span class="tag">To 45m</span>
+          <span class="tag">SSI Tec</span>
+          <span class="tag">Nitrox / Wreck</span>
+          <span class="tag">From age 12</span>
+        </div>
+        <div class="course-glyph">⚙️</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ═══════════════ DIVE SITES ═══════════════ -->
+<section id="sites">
+  <div class="sites-wrap">
+    <div class="sites-head reveal">
+      <p class="section-label">Mauritius Waters</p>
+      <h2 class="display">Over 25 dive sites<br>within 15 minutes</h2>
+      <p>Operating from Flic en Flac on Mauritius's west coast, we have access to one of the richest and most varied collections of dive spots in the Indian Ocean — volcanic arches, coral gardens, wrecks, and deep walls.</p>
+    </div>
+
+    <div class="tabs" id="siteTabs">
+      <button class="tab-btn active" onclick="switchTab('caves')">Caves &amp; Arches</button>
+      <button class="tab-btn" onclick="switchTab('reef')">Reef Sites</button>
+      <button class="tab-btn" onclick="switchTab('wrecks')">Shipwrecks</button>
+      <button class="tab-btn" onclick="switchTab('deep')">Deep Sites</button>
+    </div>
+
+    <div id="caves" class="tab-panel active">
+      <div class="site-photos">
+        <img class="site-photo" src="images/DSC_9361-e1544972452649-1024x685.jpg" alt="Cave dive" loading="lazy">
+        <img class="site-photo" src="images/DSC_8073-e1544972173219-1024x682.jpg" alt="Arch formation" loading="lazy">
+        <img class="site-photo" src="images/DSC_9730-e1544972586774-1024x682.jpg" alt="Reef wall" loading="lazy">
+        <img class="site-photo" src="images/DSC_7938-1024x683.jpg" alt="Dive site" loading="lazy">
+        <img class="site-photo" src="images/blau-fische-schmal-1024x683.jpg" alt="Blue fish" loading="lazy">
+      </div>
+      <div class="site reveal">
+        <div class="site-no">01</div>
+        <div>
+          <div class="site-depth">Max 28m</div>
+          <h3>Cathedral</h3>
+          <p>A spectacular combination of caves and drop-off formations reserved for experienced divers. One of the signature dives of Flic en Flac.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">02</div>
+        <div>
+          <div class="site-depth">Max 23m</div>
+          <h3>Swiss Drop</h3>
+          <p>Shallower neighbour of Cathedral — a more accessible alternative with equally dramatic formations.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">03</div>
+        <div>
+          <div class="site-depth">Max 34m</div>
+          <h3>Colin Bambous</h3>
+          <p>Advanced deep-dive site requiring certification. Rewarding for experienced divers chasing depth and solitude.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">04</div>
+        <div>
+          <div class="site-depth">Max 25m</div>
+          <h3>L'Eveillé</h3>
+          <p>A beautiful arch formation with an adjacent anemone garden — a favourite for underwater photography.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">05</div>
+        <div>
+          <div class="site-depth">Drift dive</div>
+          <h3>La Prairie</h3>
+          <p>An exhilarating drift dive site, ideal for Drift Diving specialty training with consistent currents.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="reef" class="tab-panel">
+      <div class="site-photos">
+        <img class="site-photo" src="images/Clownfish-Anemonen-Fish-Mauritius-SeaUrchin_DC.jpg" alt="Clownfish" loading="lazy">
+        <img class="site-photo" src="images/Triggerfish-Dropoff-Mauritius-SeaUrchin_DC.jpg" alt="Triggerfish" loading="lazy">
+        <img class="site-photo" src="images/Frogfish-Mauritius-SeaUrchin_DC.jpg" alt="Frogfish" loading="lazy">
+        <img class="site-photo" src="images/Moray-Mauritius-SeaUrchin_DC.jpg" alt="Moray eel" loading="lazy">
+        <img class="site-photo" src="images/Nudi-Mauritius-SeaUrchin_DC.jpg" alt="Nudibranch" loading="lazy">
+        <img class="site-photo" src="images/Pufferfish-Mauritius-SeaUrchin_DC.jpg" alt="Pufferfish" loading="lazy">
+        <img class="site-photo" src="images/Mantis-Shrimp-Mauritius-SeaUrchin_DC.jpg" alt="Mantis shrimp" loading="lazy">
+      </div>
+      <div class="site reveal">
+        <div class="site-no">01</div>
+        <div>
+          <div class="site-depth">5 – 20m</div>
+          <h3>Aquarium</h3>
+          <p>Beginner-friendly reef teeming with colourful fish. The perfect introduction to Mauritian reef diving.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">02</div>
+        <div>
+          <div class="site-depth">Max 25m</div>
+          <h3>Snake Reef</h3>
+          <p>Named for its sea snakes — this pinnacle also harbours lionfish, moray eels, and exceptional macro subjects.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">03</div>
+        <div>
+          <div class="site-depth">20 – 26m · Drift</div>
+          <h3>Big Rock</h3>
+          <p>A drift dive with potential eagle ray sightings — plan your dive, drift your dive.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">04</div>
+        <div>
+          <div class="site-depth">Max 35m</div>
+          <h3>Canyon</h3>
+          <p>Advanced deep-dive site requiring deep-dive qualification. Dramatic topography in the blue.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">05</div>
+        <div>
+          <div class="site-depth">Sandbank</div>
+          <h3>Canon</h3>
+          <p>Calm beginner site with a sandy bottom — ideal for buoyancy training and confident first dives.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">06</div>
+        <div>
+          <div class="site-depth">Max 19m</div>
+          <h3>Sweet Lips</h3>
+          <p>A relaxed, diverse dive famous for the sweetlips fish that congregate in its shallower sections.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">07</div>
+        <div>
+          <div class="site-depth">Shallow</div>
+          <h3>Battery &amp; Roche St. Anna</h3>
+          <p>Photography-focused sites with sandbanks perfect for training dives and underwater portraits.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="wrecks" class="tab-panel">
+      <div class="site-photos">
+        <img class="site-photo" src="images/Shipwreck-TUG-II-Mauritius-SeaUrchin_DC.jpg" alt="TUG II wreck" loading="lazy">
+        <img class="site-photo" src="images/mii-TianXiang-45mt-1024x683.jpg" alt="Tian Xiang wreck" loading="lazy">
+        <img class="site-photo" src="images/Lionfish-on-TUG-II-Mauritius-SeaUrchin_DC.jpg" alt="Lionfish on TUG II" loading="lazy">
+        <img class="site-photo" src="images/wrack-schmal-mitte-1024x683.jpg" alt="Wreck dive" loading="lazy">
+        <img class="site-photo" src="images/Pufferfish-resting-Wreck-Mauritius-SeaUrchin_DC.jpg" alt="Pufferfish on wreck" loading="lazy">
+      </div>
+      <div class="site reveal">
+        <div class="site-no">01</div>
+        <div>
+          <div class="site-depth">18m · Beginner</div>
+          <h3>TUG II</h3>
+          <p>A small, accessible tug resting in a sandy bay — a welcoming first wreck experience for newer divers.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">02</div>
+        <div>
+          <div class="site-depth">36m</div>
+          <h3>KEI SEI 113</h3>
+          <p>A Japanese fishing vessel deliberately sunk as an artificial reef, now heavily colonised by corals and fish.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">03</div>
+        <div>
+          <div class="site-depth">36m</div>
+          <h3>St. Gabriel</h3>
+          <p>An intact Japanese fishing boat resting upright — remarkably preserved and full of marine life.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">04</div>
+        <div>
+          <div class="site-depth">38m · CMAS 3★ req.</div>
+          <h3>L'Orient</h3>
+          <p>A deeper wreck requiring CMAS Level 3 certification. Rewards advanced divers with dramatic structure and atmosphere.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">05</div>
+        <div>
+          <div class="site-depth">Max 45m</div>
+          <h3>TiangXiang</h3>
+          <p>The newest wreck in Mauritian waters — sunk in June 2014 and already transforming into a thriving artificial reef.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="deep" class="tab-panel">
+      <div class="site-photos">
+        <img class="site-photo" src="images/rays-1024x683.jpg" alt="Rays" loading="lazy">
+        <img class="site-photo" src="images/adlerrochen.jpg" alt="Eagle ray" loading="lazy">
+        <img class="site-photo" src="images/Green-Turtle-with-Perrine-Mauritius-SeaUrchin_Dc.jpg" alt="Green turtle" loading="lazy">
+        <img class="site-photo" src="images/Bottlenose-Dolphin-Mauritius-SeaUrchin_DC.jpg" alt="Dolphin" loading="lazy">
+        <img class="site-photo" src="images/rochen2.jpg" alt="Ray" loading="lazy">
+        <img class="site-photo" src="images/Schwarm-SteilwandDSC_11747.jpg" alt="School of fish at wall" loading="lazy">
+      </div>
+      <div class="site reveal">
+        <div class="site-no">01</div>
+        <div>
+          <div class="site-depth">45 – 60m · Advanced cert.</div>
+          <h3>Park, Manioc &amp; Black Forrest</h3>
+          <p>Remote, dramatic deep sites with limited group access. Specialist certifications and prior experience essential.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">02</div>
+        <div>
+          <div class="site-depth">45 – 60m</div>
+          <h3>Madrass &amp; Rempart L'Herbe</h3>
+          <p>Outer reef structures plunging into the blue. Rare encounters and extreme visibility await those qualified to reach them.</p>
+        </div>
+      </div>
+      <div class="site reveal">
+        <div class="site-no">03</div>
+        <div>
+          <div class="site-depth">45 – 60m</div>
+          <h3>Cavern Moe &amp; Corail Rose</h3>
+          <p>Named for their distinctive formations. Pink coral fields and cavern systems accessible only to advanced technical divers.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ═══════════════ PHOTO GALLERY ═══════════════ -->
+<section id="gallery">
+  <div class="gallery-wrap">
+    <div class="gallery-head reveal">
+      <p class="section-label">Life Underwater</p>
+      <h2 class="display">Mauritius<br>through the lens</h2>
+    </div>
+    <div class="gallery-grid">
+      <div class="g-item wide tall">
+        <img src="images/DSC_12767.jpg" alt="Diving in Mauritius" loading="lazy">
+        <div class="g-caption">Indian Ocean</div>
+      </div>
+      <div class="g-item tall">
+        <img src="images/Green-Turtle-with-Perrine-Mauritius-SeaUrchin_Dc.jpg" alt="Green turtle" loading="lazy">
+        <div class="g-caption">Green Turtle</div>
+      </div>
+      <div class="g-item">
+        <img src="images/Frogfish-Mauritius-SeaUrchin_DC.jpg" alt="Frogfish" loading="lazy">
+        <div class="g-caption">Frogfish</div>
+      </div>
+      <div class="g-item">
+        <img src="images/Clownfish-Anemonen-Fish-Mauritius-SeaUrchin_DC.jpg" alt="Clownfish" loading="lazy">
+        <div class="g-caption">Clownfish</div>
+      </div>
+      <div class="g-item">
+        <img src="images/Lionfish-on-TUG-II-Mauritius-SeaUrchin_DC.jpg" alt="Lionfish on TUG II" loading="lazy">
+        <div class="g-caption">Lionfish · TUG II Wreck</div>
+      </div>
+      <div class="g-item">
+        <img src="images/Triggerfish-Dropoff-Mauritius-SeaUrchin_DC.jpg" alt="Triggerfish" loading="lazy">
+        <div class="g-caption">Triggerfish</div>
+      </div>
+      <div class="g-item wide">
+        <img src="images/rays-1024x683.jpg" alt="Rays" loading="lazy">
+        <div class="g-caption">Rays</div>
+      </div>
+      <div class="g-item">
+        <img src="images/Mantis-Shrimp-Mauritius-SeaUrchin_DC.jpg" alt="Mantis shrimp" loading="lazy">
+        <div class="g-caption">Mantis Shrimp</div>
+      </div>
+      <div class="g-item">
+        <img src="images/Nudi-Mauritius-SeaUrchin_DC2.jpg" alt="Nudibranch" loading="lazy">
+        <div class="g-caption">Nudibranch</div>
+      </div>
+      <div class="g-item tall">
+        <img src="images/mii-TianXiang-45mt-1024x683.jpg" alt="Tian Xiang wreck 45m" loading="lazy">
+        <div class="g-caption">Tian Xiang · 45m</div>
+      </div>
+      <div class="g-item">
+        <img src="images/adlerrochen.jpg" alt="Eagle ray" loading="lazy">
+        <div class="g-caption">Eagle Ray</div>
+      </div>
+      <div class="g-item">
+        <img src="images/Pufferfish-Mauritius-SeaUrchin_DC.jpg" alt="Pufferfish" loading="lazy">
+        <div class="g-caption">Pufferfish</div>
+      </div>
+      <div class="g-item">
+        <img src="images/Bottlenose-Dolphin-Mauritius-SeaUrchin_DC.jpg" alt="Bottlenose dolphin" loading="lazy">
+        <div class="g-caption">Bottlenose Dolphin</div>
+      </div>
+      <div class="g-item">
+        <img src="images/Shipwreck-TUG-II-Mauritius-SeaUrchin_DC.jpg" alt="TUG II shipwreck" loading="lazy">
+        <div class="g-caption">TUG II Shipwreck</div>
+      </div>
+      <div class="g-item">
+        <img src="images/Moray-Mauritius-SeaUrchin_DC.jpg" alt="Moray eel" loading="lazy">
+        <div class="g-caption">Moray Eel</div>
+      </div>
+      <div class="g-item wide">
+        <img src="images/seaUrchin-team-sun-e1547649333367.jpg" alt="SeaUrchin team" loading="lazy">
+        <div class="g-caption">The SeaUrchin Team</div>
+      </div>
+      <div class="g-item">
+        <img src="images/turtle1.jpg" alt="Sea turtle" loading="lazy">
+        <div class="g-caption">Sea Turtle</div>
+      </div>
+      <div class="g-item">
+        <img src="images/Nudi-Mauritius-SeaUrchin_DC6.jpg" alt="Nudibranch" loading="lazy">
+        <div class="g-caption">Nudibranch</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ═══════════════ A DAY AT SEAURCHIN ═══════════════ -->
+<section id="day">
+  <div class="day-wrap">
+    <div class="reveal">
+      <p class="section-label">A Day at SeaUrchin</p>
+      <h2 class="display">What a dive<br>day looks like</h2>
+      <div class="accent"></div>
+      <p>We operate Monday to Saturday, all year round. Two-tank dives run in the early morning so you have the afternoon for the island. Here's what to expect from the moment you arrive to the stories you'll tell that evening.</p>
+      <div class="hours-box">
+        <p><strong>Standard divers:</strong> Meet at 8:00 am, depart 8:15 am</p>
+        <p><strong>Beginners &amp; refresher:</strong> Meet at 7:15 am</p>
+        <p style="margin-top:.6rem;font-size:.78rem">Arrive 30 minutes early to check in &amp; collect gear</p>
+      </div>
+    </div>
+
+    <div class="timeline reveal">
+      <div class="tl-item">
+        <div class="tl-time">7:15</div>
+        <div>
+          <h4>Arrival &amp; Check-In</h4>
+          <p>Present your certification card and logbook. Complete paperwork and collect your equipment from the center.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">8:00</div>
+        <div>
+          <h4>Morning Briefing</h4>
+          <p>Your guide runs through the dive plan, conditions, safety procedures, and what marine life to watch for. Tanks load onto the pickup and head to Flic en Flac port.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">8:15</div>
+        <div>
+          <h4>On the Water</h4>
+          <p>Assemble your gear on board. The boat carries 10, 12, or 15L steel cylinders and 12L aluminium tanks. Entry via roll-back — the classic way.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">~Dive</div>
+        <div>
+          <h4>The Dive</h4>
+          <p>All dives follow Mauritian regulations with a certified guide. A mandatory 3-minute safety stop before surfacing. Boat and center carry oxygen, water, and First Aid kits.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">~Return</div>
+        <div>
+          <h4>Post-Dive</h4>
+          <p>Disassemble rental equipment, rinse all gear in provided basins. Hot beverages and logbook time back at the center. The dive never really ends here.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ═══════════════ PRICES ═══════════════ -->
+<section id="prices">
+  <div class="prices-wrap">
+    <div class="prices-head reveal">
+      <p class="section-label">Prices &amp; Services</p>
+      <h2 class="display">Transparent<br>pricing</h2>
+      <p>All prices in Euros. Guided dives only, as required by Mauritian law.</p>
+    </div>
+
+    <div class="price-tabs" id="priceTabs">
+      <button class="tab-btn active" onclick="switchPriceTab('dives')">Dives</button>
+      <button class="tab-btn" onclick="switchPriceTab('courses')">Courses</button>
+      <button class="tab-btn" onclick="switchPriceTab('specialties')">Specialties</button>
+      <button class="tab-btn" onclick="switchPriceTab('kids')">Kids &amp; Pro</button>
+    </div>
+
+    <div class="price-content">
+
+      <!-- DIVES TAB -->
+      <div id="pdives" class="price-panel active">
+        <div class="price-2col">
+          <div>
+            <div class="price-group">
+              <div class="price-group-title">With Own Equipment</div>
+              <div class="price-rows">
+                <div class="price-row"><div><div class="price-name">1 Dive</div></div><div class="price-val">€45 <small>EUR</small></div></div>
+                <div class="price-row"><div><div class="price-name">10 Dives</div><div class="price-sub">€40 per dive</div></div><div class="price-val">€400 <small>EUR</small></div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="price-group">
+              <div class="price-group-title">With Rental Equipment</div>
+              <div class="price-rows">
+                <div class="price-row"><div><div class="price-name">1 Dive</div></div><div class="price-val">€55 <small>EUR</small></div></div>
+                <div class="price-row"><div><div class="price-name">10 Dives</div><div class="price-sub">€50 per dive</div></div><div class="price-val">€500 <small>EUR</small></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="price-group" style="margin-top:2px">
+          <div class="price-group-title">Other Services</div>
+          <div class="price-rows">
+            <div class="price-row"><div><div class="price-name">Discover Scuba Diving</div><div class="price-sub">Includes equipment, insurance, and instructor</div></div><div class="price-val">€70 <small>EUR</small></div></div>
+            <div class="price-row"><div><div class="price-name">Refresher</div></div><div class="price-val">€20 <small>EUR</small></div></div>
+            <div class="price-row"><div><div class="price-name">Night Diving</div><div class="price-sub">Subject to demand, weather &amp; tidal conditions</div></div><div class="price-val">€80 <small>EUR</small></div></div>
+            <div class="price-row"><div><div class="price-name">Dive Computer</div><div class="price-sub">Per dive</div></div><div class="price-val">€5 <small>EUR</small></div></div>
+          </div>
+        </div>
+        <div class="price-note">
+          <strong>Please note:</strong> Following Mauritian law and regulations we offer guided dives only.
+          MSDA membership required for affiliated divers (MRs 200 / 2-month membership).
+        </div>
+      </div>
+
+      <!-- COURSES TAB -->
+      <div id="pcourses" class="price-panel">
+        <div class="price-2col">
+          <div>
+            <div class="price-group">
+              <div class="price-group-title">SSI Courses — click any course to learn more</div>
+              <div class="price-rows">
+
+                <details class="price-expand">
+                  <summary>
+                    <div class="pe-left">
+                      <div class="price-name">Scuba Diver</div>
+                      <div class="price-sub">Entry level · dives with a professional</div>
+                    </div>
+                    <div class="pe-right">
+                      <div class="price-val">€295</div>
+                      <div class="pe-toggle">+</div>
+                    </div>
+                  </summary>
+                  <div class="pe-body">
+                    <p class="pe-desc">The SSI Scuba Diver program is the perfect introduction to the underwater world for those with limited time. Complete just two academic sessions and two open water dives to earn your entry-level certification, valid to 12 m when diving with a professional guide. Your training credits in full toward the Open Water Diver program whenever you're ready to go further.</p>
+                    <div class="pe-tags">
+                      <span class="pe-tag">Max depth 12 m</span>
+                      <span class="pe-tag">Age 10+</span>
+                      <span class="pe-tag">No prerequisites</span>
+                      <span class="pe-tag">2 open water dives</span>
+                      <span class="pe-tag warm">Credits toward OWD</span>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="price-expand">
+                  <summary>
+                    <div class="pe-left">
+                      <div class="price-name">Open Water Diver</div>
+                      <div class="price-sub">4 days · 4 open water dives · written exam</div>
+                    </div>
+                    <div class="pe-right">
+                      <div class="price-val">€450</div>
+                      <div class="pe-toggle">+</div>
+                    </div>
+                  </summary>
+                  <div class="pe-body">
+                    <p class="pe-desc">This globally recognised certification program combines personalised training with in-water practice sessions to ensure you develop the skills and comfort needed underwater. Designed for beginners aged 10 and up, you'll complete six academic sessions, six confined water sessions, and four open water dives to a maximum depth of 18 m. Upon completion you earn the SSI Open Water Diver certification — your passport to the world's best dive sites.</p>
+                    <div class="pe-tags">
+                      <span class="pe-tag">Max depth 18 m</span>
+                      <span class="pe-tag">Age 10+</span>
+                      <span class="pe-tag">No prerequisites</span>
+                      <span class="pe-tag">4 days</span>
+                      <span class="pe-tag">4 open water dives</span>
+                      <span class="pe-tag warm">ISO-certified</span>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="price-expand">
+                  <summary>
+                    <div class="pe-left">
+                      <div class="price-name">Advanced Adventurer</div>
+                      <div class="price-sub">5 specialty introductions · intermediate level</div>
+                    </div>
+                    <div class="pe-right">
+                      <div class="price-val">€420</div>
+                      <div class="pe-toggle">+</div>
+                    </div>
+                  </summary>
+                  <div class="pe-body">
+                    <p class="pe-desc">During the Advanced Adventurer program you try out five different specialties — one open water training dive per specialty, following a comprehensive briefing. Extend your dive times, reduce air consumption, and discover the type of diving you love without committing to full specialty programs. Your Advanced Adventurer training credits toward full specialty certifications completed later.</p>
+                    <div class="pe-tags">
+                      <span class="pe-tag">5 specialty dives</span>
+                      <span class="pe-tag">Requires OWD</span>
+                      <span class="pe-tag">Intermediate level</span>
+                      <span class="pe-tag warm">Credits toward specialties</span>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="price-expand">
+                  <summary>
+                    <div class="pe-left">
+                      <div class="price-name">Dive Guide</div>
+                      <div class="price-sub">First professional step · lead certified divers</div>
+                    </div>
+                    <div class="pe-right">
+                      <div class="price-val">€900</div>
+                      <div class="pe-toggle">+</div>
+                    </div>
+                  </summary>
+                  <div class="pe-body">
+                    <p class="pe-desc">The SSI Dive Guide program is the first step on a professional journey where you learn to safely lead certified divers in various environments and conditions. Through five academic sessions, four confined water sessions, and five open water dives to 40 metres, you develop skills in dive briefings, site evaluations, and group leadership. Upon certification you can work professionally as a Dive Guide, or continue advancing toward Divemaster credentials.</p>
+                    <div class="pe-tags">
+                      <span class="pe-tag">Max depth 40 m</span>
+                      <span class="pe-tag">40 logged dives required</span>
+                      <span class="pe-tag">Age 15+</span>
+                      <span class="pe-tag">5 open water dives</span>
+                      <span class="pe-tag warm">Professional certification</span>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="price-expand">
+                  <summary>
+                    <div class="pe-left">
+                      <div class="price-name">Mermaid</div>
+                      <div class="price-sub">Monofin · pool &amp; open water</div>
+                    </div>
+                    <div class="pe-right">
+                      <div class="price-val">€100</div>
+                      <div class="pe-toggle">+</div>
+                    </div>
+                  </summary>
+                  <div class="pe-body">
+                    <p class="pe-desc">The SSI Mermaid program teaches you how to safely and gracefully swim in a full mermaid tail while building aquatic confidence and fitness. Combining academic sessions with confined water training, you develop essential mermaid techniques and fluid underwater movement. Advance to the Ocean Mermaid certification to take your skills into open water environments worldwide — and gain a natural gateway into freediving.</p>
+                    <div class="pe-tags">
+                      <span class="pe-tag">Age 12+</span>
+                      <span class="pe-tag">No prerequisites</span>
+                      <span class="pe-tag">Monofin training</span>
+                      <span class="pe-tag warm">Gateway to freediving</span>
+                    </div>
+                  </div>
+                </details>
+
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="price-group">
+              <div class="price-group-title">CMAS Courses — click any course to learn more</div>
+              <div class="price-rows">
+
+                <details class="price-expand">
+                  <summary>
+                    <div class="pe-left">
+                      <div class="price-name">1★ Diver</div>
+                      <div class="price-sub">Entry level · dives with instructor or buddy</div>
+                    </div>
+                    <div class="pe-right">
+                      <div class="price-val">€350</div>
+                      <div class="pe-toggle">+</div>
+                    </div>
+                  </summary>
+                  <div class="pe-body">
+                    <p class="pe-desc">The CMAS One-Star Diver is the entry-level recreational scuba certification teaching the fundamental skills needed to dive safely with an instructor or certified buddy. This introductory program provides basic theoretical knowledge and practical training in confined and open water, enabling you to undertake accompanied no-decompression dives and begin exploring the underwater world.</p>
+                    <div class="pe-tags">
+                      <span class="pe-tag">Max depth 20 m</span>
+                      <span class="pe-tag">Age 14+</span>
+                      <span class="pe-tag">No prerequisites</span>
+                      <span class="pe-tag">4 open water dives</span>
+                      <span class="pe-tag warm">Accompanied dives</span>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="price-expand">
+                  <summary>
+                    <div class="pe-left">
+                      <div class="price-name">2★ Diver</div>
+                      <div class="price-sub">Independent buddy diving · deeper waters</div>
+                    </div>
+                    <div class="pe-right">
+                      <div class="price-val">€600</div>
+                      <div class="pe-toggle">+</div>
+                    </div>
+                  </summary>
+                  <div class="pe-body">
+                    <p class="pe-desc">The CMAS Two-Star Diver course advances your skills through enhanced buoyancy control, underwater navigation, and deeper diving techniques. You develop professional-level diving knowledge and emergency procedures, gaining the competency to dive independently with a certified buddy to 30 metres — the hallmark of a confident, self-sufficient recreational diver.</p>
+                    <div class="pe-tags">
+                      <span class="pe-tag">Max depth 30 m</span>
+                      <span class="pe-tag">Age 15+</span>
+                      <span class="pe-tag">Requires CMAS 1★</span>
+                      <span class="pe-tag">20 logged dives</span>
+                      <span class="pe-tag warm">Independent buddy diving</span>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="price-expand">
+                  <summary>
+                    <div class="pe-left">
+                      <div class="price-name">3★ Diver</div>
+                      <div class="price-sub">Dive Leader · first professional level</div>
+                    </div>
+                    <div class="pe-right">
+                      <div class="price-val">€640</div>
+                      <div class="pe-toggle">+</div>
+                    </div>
+                  </summary>
+                  <div class="pe-body">
+                    <p class="pe-desc">The CMAS Three-Star Diver is an advanced leadership certification representing the first professional-level achievement in recreational diving. This course develops comprehensive rescue skills, dive management expertise, and advanced technical knowledge — certifying you as a Dive Leader capable of planning, organising, and guiding recreational divers on open water dives to 40 metres with exemplary safety standards.</p>
+                    <div class="pe-tags">
+                      <span class="pe-tag">Max depth 40 m</span>
+                      <span class="pe-tag">Age 18+</span>
+                      <span class="pe-tag">Requires CMAS 2★ + Rescue</span>
+                      <span class="pe-tag">50 logged dives</span>
+                      <span class="pe-tag warm">Dive Leader certification</span>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="price-expand">
+                  <summary>
+                    <div class="pe-left">
+                      <div class="price-name">4★ Diver</div>
+                      <div class="price-sub">Master Diver · highest recreational level</div>
+                    </div>
+                    <div class="pe-right">
+                      <div class="price-val">€920</div>
+                      <div class="pe-toggle">+</div>
+                    </div>
+                  </summary>
+                  <div class="pe-body">
+                    <p class="pe-desc">The CMAS Four-Star Diver represents the highest level of recreational diving achievement — earned through extensive professional experience rather than formal coursework alone. A Four-Star diver demonstrates mastery across all diving disciplines, comprehensive expertise in dive management and emergency procedures, and the proven capability to organise and execute complex diving expeditions with exceptional safety competence.</p>
+                    <div class="pe-tags">
+                      <span class="pe-tag">Age 21+</span>
+                      <span class="pe-tag">Requires CMAS 3★</span>
+                      <span class="pe-tag">100 logged dives</span>
+                      <span class="pe-tag">4 specialty courses</span>
+                      <span class="pe-tag warm">Master Diver</span>
+                    </div>
+                  </div>
+                </details>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="price-note" style="margin-top:2px">
+          <strong>Note:</strong> SSI and PADI are both ISO-certified — crossover between systems is straightforward. Ask us about converting your existing certification.
+        </div>
+      </div>
+
+      <!-- SPECIALTIES TAB -->
+      <div id="pspecialties" class="price-panel">
+        <div class="price-group">
+          <div class="price-group-title">SSI Specialty Courses</div>
+          <div class="price-rows">
+            <div class="price-row"><div><div class="price-name">Stress &amp; Rescue</div></div><div class="price-val">€450</div></div>
+            <div class="price-row"><div><div class="price-name">React Right</div></div><div class="price-val">€100</div></div>
+            <div class="price-row"><div><div class="price-name">Boat Diver</div></div><div class="price-val">€200</div></div>
+            <div class="price-row"><div><div class="price-name">Deep Diver</div></div><div class="price-val">€295</div></div>
+            <div class="price-row"><div><div class="price-name">Navigation</div></div><div class="price-val">€200</div></div>
+            <div class="price-row"><div><div class="price-name">Night / Limited Visibility</div></div><div class="price-val">€250</div></div>
+            <div class="price-row"><div><div class="price-name">Perfect Buoyancy</div></div><div class="price-val">€200</div></div>
+            <div class="price-row"><div><div class="price-name">Search &amp; Recover</div></div><div class="price-val">€200</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KIDS & PRO TAB -->
+      <div id="pkids" class="price-panel">
+        <div class="price-2col">
+          <div>
+            <div class="price-group">
+              <div class="price-group-title">Kids Programs</div>
+              <div class="price-rows">
+                <div class="price-row"><div><div class="price-name">Scuba Explorers</div><div class="price-sub">From age 8</div></div><div class="price-val">€125</div></div>
+                <div class="price-row"><div><div class="price-name">Junior Open Water Diver</div><div class="price-sub">From age 10</div></div><div class="price-val">€450</div></div>
+                <div class="price-row"><div><div class="price-name">Junior Advanced OWD</div><div class="price-sub">From age 10</div></div><div class="price-val">€350</div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="price-group">
+              <div class="price-group-title">Professional Training</div>
+              <div class="price-rows">
+                <div class="price-row"><div><div class="price-name">Dive Master</div><div class="price-sub">Min. 40 dives to start · 60 to complete · 18+</div></div><div class="price-val">€1,000</div></div>
+                <div class="price-row"><div><div class="price-name">Assistant Instructor / Instructor</div><div class="price-sub">Contact us for detailed requirements</div></div><div class="price-val">€2,200</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="price-note" style="margin-top:2px">
+          <strong>Free Divemaster Internship:</strong> 3-month program, 6 days/week, under an SSI Instructor Trainer or PADI Instructor.
+          Internship covers training and center exposure at no cost. Accommodation, transport, and SSI/PADI application fees are not included.
+          Start dates: August · October · December · February. Apply to <strong style="color:var(--cream)">hello@diveseaurchin.com</strong>
+        </div>
+      </div>
+
+    </div><!-- /price-content -->
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ═══════════════ PROMOTIONS ═══════════════ -->
+
+<!-- ═══════════════ FAQ ═══════════════ -->
+<section id="faq">
+  <div class="faq-wrap">
+    <div class="faq-head reveal">
+      <p class="section-label">Frequently Asked Questions</p>
+      <h2 class="display">Everything you<br>need to know</h2>
+    </div>
+    <div class="faq-grid">
+
+      <details class="reveal">
+        <summary>What should I bring?</summary>
+        <div class="faq-ans">A swimsuit and towel are compulsory. You're welcome to bring your own diving or snorkelling gear, but all necessary equipment is provided at the center.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>When do you operate?</summary>
+        <div class="faq-ans">We dive Monday to Saturday, all year round. The center is open 8:00 – 16:00. We close on Sundays and January 1st only.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>Do I need a medical certificate?</summary>
+        <div class="faq-ans">A medical certificate is not legally required in Mauritius. However, if you have any health concerns, we recommend consulting your doctor before travelling.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>At what age can children dive?</summary>
+        <div class="faq-ans">Children can join playful water exercises from age 8. From age 10, they can work toward the Junior Open Water Diver certification. Rescue Diver training starts at 16 and DivePro training at 18.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>How long does an Open Water certification take?</summary>
+        <div class="faq-ans">A minimum of four days is required for the full Open Water Diver certification — covering theory, confined water exercises, and four open water dives plus a written exam.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>What tanks and valves do you use?</summary>
+        <div class="faq-ans">We accommodate both DIN and INT/Yoke valve fittings. We dive with 10, 12, and 15-litre steel cylinders, as well as 12-litre aluminium tanks.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>What's the water temperature?</summary>
+        <div class="faq-ans">In summer (November – April), the water reaches up to 30 °C. In winter (May – October), it drops to around 24 °C. A 3mm wetsuit is comfortable year-round; a 5mm is available for cooler months.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>Are there sharks?</summary>
+        <div class="faq-ans">Sharks are present in Mauritian waters — encounters are rare but possible. In winter, whales pass through while some shark species retreat deeper. All dives are fully guided for your safety.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>How long before flying after a dive?</summary>
+        <div class="faq-ans">We recommend a surface interval of 18 – 24 hours before boarding a flight. Please plan your last diving day accordingly.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>Can I dive to other coasts?</summary>
+        <div class="faq-ans">Yes — dive safaris to southern Mauritius are available for groups of minimum four people with advance reservation. Ask us to organise your island-wide adventure.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>I'm pregnant — can I dive?</summary>
+        <div class="faq-ans">Diving during pregnancy is not permitted. Diving during breastfeeding, menstruation, or with silicone implants presents no issue whatsoever.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>Can I switch between PADI and SSI?</summary>
+        <div class="faq-ans">Absolutely. Both SSI and PADI are ISO-certified standards and crossover between them is straightforward. We can assist with the process regardless of where you trained originally.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>Are there night dives?</summary>
+        <div class="faq-ans">Yes, night dives are available subject to demand, weather conditions, and tides. Priced at €80 per person. Ask when you book.</div>
+      </details>
+
+      <details class="reveal">
+        <summary>What facilities are available?</summary>
+        <div class="faq-ans">We provide hot showers, equipment storage, logbook tables, hot beverages after dives, and a friendly, relaxed atmosphere to debrief the day's underwater highlights.</div>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ═══════════════ BLOG / JOURNAL ═══════════════ -->
+<section id="blog">
+  <div class="blog-wrap">
+    <div class="blog-head reveal">
+      <p class="section-label">Ocean Journal</p>
+      <h2 class="display">Stories from<br>below the surface</h2>
+    </div>
+    <div class="blog-grid" id="blogGrid"></div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ═══════════════ CONTACT ═══════════════ -->
+<section id="contact">
+  <div class="contact-wrap">
+    <div class="contact-inner">
+      <div class="contact-left reveal">
+        <p class="section-label">Get In Touch</p>
+        <h2 class="display">Ready to<br>take the plunge?</h2>
+        <div class="accent"></div>
+        <p>
+          Come find us on the Royal Road in Flic en Flac.
+          Whether you're booking a course, planning your next dive trip,
+          or simply curious — we'd love to hear from you.
+        </p>
+        <div class="socials">
+          <a href="https://www.facebook.com/SeaUrchinDiveCenter" target="_blank" rel="noopener" class="soc" title="Facebook">FB</a>
+          <a href="https://www.instagram.com/SeaUrchin_DC" target="_blank" rel="noopener" class="soc" title="Instagram">IG</a>
+          <a href="https://www.youtube.com" target="_blank" rel="noopener" class="soc" title="YouTube">YT</a>
+          <a href="https://twitter.com/seaurchindiving" target="_blank" rel="noopener" class="soc" title="Twitter">TW</a>
+        </div>
+
+        <div class="hours-grid">
+          <div class="hour-cell">
+            <div class="hour-day">Monday – Saturday</div>
+            <div class="hour-time">08:00 – 16:00</div>
+          </div>
+          <div class="hour-cell">
+            <div class="hour-day">Sunday &amp; Jan 1st</div>
+            <div class="hour-time">Closed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="c-items reveal">
+        <div class="c-item">
+          <div class="c-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.51 1.5 3.5 3.51 3.5 6C3.5 9.5 8 14.5 8 14.5C8 14.5 12.5 9.5 12.5 6C12.5 3.51 10.49 1.5 8 1.5ZM8 7.75C7.03 7.75 6.25 6.97 6.25 6C6.25 5.03 7.03 4.25 8 4.25C8.97 4.25 9.75 5.03 9.75 6C9.75 6.97 8.97 7.75 8 7.75Z" fill="currentColor"/></svg>
+          </div>
+          <div>
+            <div class="c-label">Address</div>
+            <div class="c-val">Royal Road / Coastal Road<br>Flic en Flac, Mauritius</div>
+          </div>
+        </div>
+
+        <div class="c-item">
+          <div class="c-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2.5H6L7.5 6L5.5 7.5C6.5 9.5 6.5 9.5 8.5 10.5L10 8.5L13.5 10V13C13.5 13.83 12.55 14.32 11.86 13.83C6.11 9.94 2.06 5.89 2.17 4.14C2.26 2.97 2.97 2.5 3 2.5Z" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <div class="c-label">Telephone</div>
+            <div class="c-val"><a href="tel:+23045388825">+230 453 88 25</a></div>
+          </div>
+        </div>
+
+        <div class="c-item">
+          <div class="c-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.5 2.5H2.5C1.95 2.5 1.5 2.95 1.5 3.5V12.5C1.5 13.05 1.95 13.5 2.5 13.5H10.5L14.5 11V3.5C14.5 2.95 14.05 2.5 13.5 2.5Z" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M1.5 5.5L8 9L14.5 5.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div class="c-label">WhatsApp (Weekdays 8–16)</div>
+            <div class="c-val"><a href="https://wa.me/23058509487" target="_blank" rel="noopener">+230 5850 9487</a></div>
+          </div>
+        </div>
+
+        <div class="c-item">
+          <div class="c-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="3.5" width="13" height="9" rx="1.2" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 5.5L8 9.5L14.5 5.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div class="c-label">Email</div>
+            <div class="c-val"><a href="mailto:hello@diveseaurchin.com">hello@diveseaurchin.com</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ BOOKING ═══════════════ -->
+<section id="book">
+  <div class="book-bg"></div>
+  <div class="book-wrap">
+
+    <!-- Left: copy -->
+    <div class="book-left reveal">
+      <p class="section-label">Online Booking</p>
+      <h2 class="display">Reserve your<br><em style="color:var(--cyan);font-style:italic">dive online</em></h2>
+      <div class="accent"></div>
+      <p>Book your spot in minutes. Choose your activity, pick a date, and we'll confirm your reservation within a few hours.</p>
+      <p>No payment required to reserve — we'll sort the details when you arrive.</p>
+      <div class="book-features">
+        <div class="book-feat">
+          <div class="book-feat-icon">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#1bc8bc" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          Free to reserve — pay on the day
+        </div>
+        <div class="book-feat">
+          <div class="book-feat-icon">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#1bc8bc" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          Confirmation within a few hours
+        </div>
+        <div class="book-feat">
+          <div class="book-feat-icon">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#1bc8bc" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          All equipment provided
+        </div>
+        <div class="book-feat">
+          <div class="book-feat-icon">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#1bc8bc" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          Mon – Sat, departures from 08:00
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: form -->
+    <div class="book-card reveal">
+
+      <!-- Step indicator -->
+      <div class="book-steps" id="bookSteps">
+        <div class="book-step-item">
+          <div class="book-step-dot active" id="sd1">1</div>
+          <div class="book-step-label active" id="sl1">Activity</div>
+        </div>
+        <div class="book-step-line"></div>
+        <div class="book-step-item">
+          <div class="book-step-dot" id="sd2">2</div>
+          <div class="book-step-label" id="sl2">Date &amp; Time</div>
+        </div>
+        <div class="book-step-line"></div>
+        <div class="book-step-item">
+          <div class="book-step-dot" id="sd3">3</div>
+          <div class="book-step-label" id="sl3">Your Details</div>
+        </div>
+        <div class="book-step-line"></div>
+        <div class="book-step-item">
+          <div class="book-step-dot" id="sd4">4</div>
+          <div class="book-step-label" id="sl4">Confirm</div>
+        </div>
+      </div>
+
+      <!-- Error banner -->
+      <div class="book-error" id="bookErr"></div>
+
+      <!-- ── STEP 1: Activity ── -->
+      <div class="book-panel active" id="bStep1">
+        <p class="book-label">Choose your activity</p>
+        <div class="svc-grid" id="svcGrid">
+          <button class="svc-btn" onclick="selectSvc(this,'Trial Dive / Discover Scuba')">
+            <b>Trial Dive</b>Discover Scuba for beginners
+            <div class="svc-price">From €70</div>
+          </button>
+          <button class="svc-btn" onclick="selectSvc(this,'Fun Dive — Own Equipment')">
+            <b>Fun Dive</b>Own equipment
+            <div class="svc-price">€45 / dive</div>
+          </button>
+          <button class="svc-btn" onclick="selectSvc(this,'Fun Dive — Rental Equipment')">
+            <b>Fun Dive</b>Full rental included
+            <div class="svc-price">€55 / dive</div>
+          </button>
+          <button class="svc-btn" onclick="selectSvc(this,'Night Diving')">
+            <b>Night Diving</b>Magical after-dark dive
+            <div class="svc-price">€55</div>
+          </button>
+          <button class="svc-btn" onclick="selectSvc(this,'Open Water Diver Course (SSI/PADI)')">
+            <b>Open Water</b>Full certification course
+            <div class="svc-price">€350</div>
+          </button>
+          <button class="svc-btn" onclick="selectSvc(this,'Advanced Adventurer Course')">
+            <b>Advanced</b>Take your skills further
+            <div class="svc-price">€420</div>
+          </button>
+          <button class="svc-btn" onclick="selectSvc(this,'Snorkelling')">
+            <b>Snorkelling</b>Surface reef exploration
+            <div class="svc-price">€25</div>
+          </button>
+          <button class="svc-btn" onclick="selectSvc(this,'Mermaid Experience')">
+            <b>Mermaid</b>Monofin experience
+            <div class="svc-price">€100</div>
+          </button>
+        </div>
+        <div class="book-nav">
+          <span></span>
+          <button class="book-next" id="svcNext" onclick="goStep(2)" disabled>
+            Next
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 5H13M9 1L13 5L9 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: Date & Time ── -->
+      <div class="book-panel" id="bStep2">
+        <div class="book-row">
+          <label class="book-label" for="bDate">Preferred date <span style="color:var(--red)">*</span></label>
+          <input class="book-input" type="date" id="bDate" required>
+        </div>
+        <div class="book-row">
+          <label class="book-label" for="bTime">Preferred departure time</label>
+          <select class="book-select" id="bTime">
+            <option value="08:00">08:00 — Morning (recommended)</option>
+            <option value="10:00">10:00 — Mid-morning</option>
+            <option value="12:00">12:00 — Noon</option>
+            <option value="14:00">14:00 — Afternoon</option>
+            <option value="Flexible">Flexible — any time works</option>
+          </select>
+        </div>
+        <div class="book-row">
+          <label class="book-label">Number of people</label>
+          <div class="people-counter">
+            <button class="pctr-btn" type="button" onclick="changePeople(-1)">−</button>
+            <input class="pctr-val" type="number" id="bPeople" value="1" min="1" max="20" readonly>
+            <button class="pctr-btn" type="button" onclick="changePeople(1)">+</button>
+          </div>
+        </div>
+        <div class="book-row">
+          <label class="book-label" for="bExp">Your diving experience</label>
+          <select class="book-select" id="bExp">
+            <option value="No experience — complete beginner">No experience — complete beginner</option>
+            <option value="Snorkelling only">Snorkelling only</option>
+            <option value="A few guided dives">A few guided dives</option>
+            <option value="Certified diver (OWD or equivalent)">Certified diver (OWD or equivalent)</option>
+            <option value="Advanced / experienced diver">Advanced / experienced diver</option>
+          </select>
+        </div>
+        <div class="book-nav">
+          <button class="book-back" onclick="goStep(1)">← Back</button>
+          <button class="book-next" onclick="goStep(3)">
+            Next
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 5H13M9 1L13 5L9 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 3: Personal details ── -->
+      <div class="book-panel" id="bStep3">
+        <div class="book-row">
+          <label class="book-label" for="bName">Full name <span style="color:var(--red)">*</span></label>
+          <input class="book-input" type="text" id="bName" placeholder="Jane Smith" autocomplete="name" required>
+        </div>
+        <div class="book-row-2">
+          <div class="book-row" style="margin-bottom:0">
+            <label class="book-label" for="bEmail">Email <span style="color:var(--red)">*</span></label>
+            <input class="book-input" type="email" id="bEmail" placeholder="jane@example.com" autocomplete="email" required>
+          </div>
+          <div class="book-row" style="margin-bottom:0">
+            <label class="book-label" for="bPhone">Phone / WhatsApp</label>
+            <input class="book-input" type="tel" id="bPhone" placeholder="+230 …" autocomplete="tel">
+          </div>
+        </div>
+        <div class="book-row" style="margin-top:1.1rem">
+          <label class="book-label" for="bNotes">Special requests or questions</label>
+          <textarea class="book-textarea" id="bNotes" placeholder="Dietary requirements, medical conditions, questions…"></textarea>
+        </div>
+        <div class="book-nav">
+          <button class="book-back" onclick="goStep(2)">← Back</button>
+          <button class="book-next" onclick="goStep(4)">
+            Review booking
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 5H13M9 1L13 5L9 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 4: Review & submit ── -->
+      <div class="book-panel" id="bStep4">
+        <div id="bookSummary"></div>
+        <div class="book-nav" style="margin-top:2rem">
+          <button class="book-back" onclick="goStep(3)">← Edit</button>
+          <button class="book-next" id="btnSubmit" onclick="submitBooking()">
+            Confirm Booking
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 5H13M9 1L13 5L9 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 5: Success ── -->
+      <div class="book-panel" id="bStep5">
+        <div class="book-success">
+          <div class="book-success-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M5 14L11.5 20.5L23 8" stroke="#1bc8bc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Request received!</h3>
+          <p>We'll review your booking and send a confirmation email within a few hours.<br>See you in the water soon.</p>
+          <div class="book-ref" id="bookRefDisplay"></div>
+          <p style="margin-top:1.5rem;font-size:.8rem">Questions? Call <a href="tel:+23045388825" style="color:var(--cyan)">+230 453 88 25</a> or WhatsApp <a href="https://wa.me/23058509487" style="color:var(--cyan)">+230 5850 9487</a></p>
+        </div>
+      </div>
+
+    </div><!-- /book-card -->
+  </div><!-- /book-wrap -->
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <p class="footer-copy">© 2024 SeaUrchin Diving Center &nbsp;·&nbsp; Flic en Flac, Mauritius</p>
+  <nav class="footer-nav" aria-label="Footer navigation">
+    <a href="#about">About</a>
+    <a href="#courses">Courses</a>
+    <a href="#sites">Dive Sites</a>
+    <a href="#prices">Prices</a>
+
+    <a href="#faq">FAQ</a>
+    <a href="#contact">Contact</a>
+    <a href="#book">Book Online</a>
+    <a href="admin.html" style="opacity:.35;margin-left:1rem" title="Blog Admin">Admin</a>
+  </nav>
+</footer>
+
+<script>
+  /* ── Nav stick ── */
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('stuck', scrollY > 60), { passive: true });
+
+  /* ── Bubbles ── */
+  const bc = document.getElementById('bubbles');
+  for (let i = 0; i < 22; i++) {
+    const b = document.createElement('div');
+    b.className = 'b';
+    const s = Math.random() * 18 + 5;
+    b.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*14+9}s;animation-delay:${Math.random()*14}s;--dx:${(Math.random()-.5)*100}px`;
+    bc.appendChild(b);
+  }
+
+  /* ── Scroll reveal ── */
+  const ro = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (!e.isIntersecting) return;
+      setTimeout(() => e.target.classList.add('in'), i * 70);
+      ro.unobserve(e.target);
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+  /* ── Dive Sites tabs ── */
+  function switchTab(id) {
+    document.querySelectorAll('#siteTabs .tab-btn').forEach((b, i) => {
+      b.classList.toggle('active', ['caves','reef','wrecks','deep'][i] === id);
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById(id);
+    panel.classList.add('active');
+    panel.querySelectorAll('.reveal').forEach(el => {
+      if (!el.classList.contains('in')) setTimeout(() => el.classList.add('in'), 80);
+    });
+  }
+
+  /* ── Price tabs ── */
+  function switchPriceTab(id) {
+    const ids = ['dives','courses','specialties','kids'];
+    document.querySelectorAll('#priceTabs .tab-btn').forEach((b, i) => {
+      b.classList.toggle('active', ids[i] === id);
+    });
+    document.querySelectorAll('.price-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('p' + id).classList.add('active');
+  }
+
+  /* ── Mobile menu ── */
+  function openMob()  { document.getElementById('mob-menu').classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeMob() { document.getElementById('mob-menu').classList.remove('open'); document.body.style.overflow = ''; }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeMob(); closePost(); }
+  });
+</script>
+
+<!-- ── marked + DOMPurify for blog rendering ── -->
+<script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+
+<!-- ── Post modal ── -->
+<div id="postModal" class="post-modal" onclick="closePostBackdrop(event)">
+  <div class="post-modal-box">
+    <button class="post-modal-close" onclick="closePost()" aria-label="Close">✕</button>
+    <p class="modal-tag" id="modalTag"></p>
+    <h1 class="modal-title" id="modalTitle"></h1>
+    <p class="modal-meta" id="modalMeta"></p>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   BLOG ENGINE
+   ════════════════════════════════════════ */
+const POSTS_KEY  = 'su_posts';
+const SEEDED_KEY = 'su_seeded';
+
+const SEED_POSTS = [
+  {
+    id:'seed-1', title:"Let's Get to Know Sea Turtles a Little Better",
+    tag:'Marine Life', featured:true, published:true, date:'2024-01-15',
+    excerpt:"They've roamed the ocean for over 100 million years. Ancient, graceful, and increasingly vulnerable — understanding these creatures is the first step to protecting them.",
+    content:`## Sea Turtles of Mauritius
+
+Sea turtles have patrolled our oceans for over 100 million years, outlasting the dinosaurs. Yet today every species faces serious threats from human activity.
+
+### Species Found in Mauritius
+
+**Hawksbill Turtle** (*Eretmochelys imbricata*) — named for its narrow, pointed beak. Critically endangered. Feeds primarily on sea sponges and plays a vital role in maintaining healthy coral reef ecosystems.
+
+**Green Turtle** (*Chelonia mydas*) — the largest hard-shelled sea turtle. Adults are primarily herbivores, grazing on seagrasses and algae.
+
+### Encountering Sea Turtles While Diving
+
+At SeaUrchin, we encounter sea turtles regularly — particularly at shallower reef sites around Flic en Flac. The key to a meaningful encounter is patience and respect:
+
+- Approach slowly, from the side rather than from above
+- Maintain a respectful distance — never touch or chase
+- Control your buoyancy — disturbing the sand stresses the animal
+- Let the turtle set the pace of the encounter
+
+A calm diver is often rewarded with a turtle that continues its day completely unbothered.
+
+### Conservation
+
+The main threats to sea turtles today are plastic pollution (mistaken for jellyfish), bycatch in fishing nets, coastal development destroying nesting beaches, and climate change affecting nest temperatures which determines hatchling sex ratios.
+
+Every responsible choice — whether in the water or on land — makes a difference.`
+  },
+  {
+    id:'seed-2', title:'Anchor Damage on Coral Reefs',
+    tag:'Conservation', featured:false, published:true, date:'2024-02-01',
+    excerpt:'A single anchor drop can destroy decades of coral growth. How responsible boating makes a real difference.',
+    content:`## The Hidden Cost of Anchoring on Reefs
+
+Coral reefs are among Earth's most biodiverse ecosystems — and among the most fragile. A single careless anchor drop can destroy coral structures that took 50–100 years to grow.
+
+### How Damage Happens
+
+1. **Impact** — the anchor itself crushes and fragments coral on contact
+2. **Chain drag** — as the boat swings with wind and current, the chain scrapes a wide arc across the reef
+3. **Recovery** — takes decades, if it happens at all in warming seas
+
+### Better Practice
+
+- Always use mooring buoys where they are provided
+- Anchor only on sandy bottoms, well away from visible coral
+- Use a diver or snorkeller to guide the anchor to a clear patch
+- Support dive operators who advocate for permanent mooring networks
+
+### SeaUrchin's Approach
+
+We use established mooring points at all reef sites and actively advocate for the expansion of the permanent mooring network around Flic en Flac.`
+  },
+  {
+    id:'seed-3', title:'Eagle Rays of Mauritius',
+    tag:'Marine Life', featured:false, published:true, date:'2024-02-20',
+    excerpt:"Effortless, silent, and magnificent — eagle ray encounters in Mauritian waters are among the Indian Ocean's finest.",
+    content:`## Spotted Eagle Rays — Winged Phantoms
+
+Few diving encounters match the quiet drama of a spotted eagle ray gliding past — wings spread wide, moving with complete effortlessness through open water.
+
+### Identification
+
+*Aetobatus narinari* — the spotted eagle ray — is recognised by its white-spotted dark back and long, whip-like tail. Wingspan can reach 3 metres. The distinctive flat, duck-bill snout is adapted for excavating prey buried in sand.
+
+### Where to See Them
+
+At SeaUrchin, eagle ray sightings are most frequent at **Big Rock** and on drift dives, particularly during the cooler months (June–September). They typically cruise the mid-water column above the reef, often in small groups.
+
+### Tips for a Better Encounter
+
+- Stay still rather than swimming toward them
+- Control your exhale — rapid bubbles can startle them
+- Eagle rays are curious — let them decide to approach you
+- Never chase or attempt to touch them
+
+### Diet
+
+Specialist predators of benthic invertebrates — clams, oysters, and crustaceans buried in sand. The pronounced snout acts like a shovel.`
+  },
+  {
+    id:'seed-4', title:'Ocean Noise: Turning Down the Volume',
+    tag:'Ocean Health', featured:false, published:true, date:'2024-03-05',
+    excerpt:'Underwater noise pollution is a silent crisis. Discover how sound travels in the sea and what it means for marine life.',
+    content:`## The Ocean Has Never Been Silent
+
+Jacques Cousteau called the ocean "the silent world" — but this was always a human perspective. For marine animals, the sea is a rich acoustic environment. Sound travels five times faster underwater than in air, and species have evolved over millions of years to exploit this.
+
+### Sources of Noise Pollution
+
+**Shipping**: Commercial vessels produce continuous low-frequency noise audible thousands of kilometres away. Global shipping traffic has doubled since 1990.
+
+**Sonar**: Military sonar can reach extreme decibel levels — linked to internal haemorrhaging in whales and documented mass strandings worldwide.
+
+**Seismic surveys**: Air guns used in oil and gas exploration fire acoustic pulses every 10 seconds, 24 hours a day, for weeks at a time.
+
+### Impact on Marine Life
+
+- Whales and dolphins rely on echolocation and song over vast distances — noise pollution disrupts feeding, reproduction, and navigation
+- Reef fish larvae use the sound of a healthy reef to navigate home — degraded, noisier reefs are harder to find
+- Chronic noise raises stress hormones and suppresses immune function across many species
+
+### What Divers Can Do
+
+Advocate for speed restrictions in critical habitats, quieter vessel designs, and seasonal restrictions on seismic surveys. Choose operators who maintain their equipment well.`
+  },
+  {
+    id:'seed-5', title:'Artificial Reefs — Shipwrecks of Mauritius',
+    tag:'Wrecks', featured:false, published:true, date:'2024-03-20',
+    excerpt:"From cargo ships to fishing vessels, Mauritius's wrecks are now thriving reef ecosystems.",
+    content:`## When Ships Become Reefs
+
+Deliberately sunk vessels are one of the most effective tools in marine conservation. Within months of submersion, a shipwreck begins to transform. Within a decade, a bare hull becomes a thriving artificial reef.
+
+### The Wrecks We Dive
+
+**TUG II — 18m**
+The most accessible wreck in our waters. A small tug resting on a sandy bottom — ideal for first wreck dives. Already home to lionfish, scorpionfish, and varied reef fish.
+
+**KEI SEI 113 — 36m**
+A Japanese fishing vessel deliberately sunk as an artificial reef. Now heavily colonised with soft corals and hosting schools of glassfish.
+
+**St. Gabriel — 36m**
+Resting remarkably upright — one of the most photogenic wrecks in Mauritius.
+
+**TiangXiang — 45m**
+The newest wreck in our waters, sunk June 2014. An exciting site to revisit over the years as its reef ecosystem develops.
+
+**L'Orient — 38m**
+The deepest accessible wreck, requiring CMAS Level 3 certification. One of the most atmospheric dives in Mauritius for those qualified to explore it.`
+  },
+  {
+    id:'seed-6', title:'Why Are There So Few Corals in Mauritius?',
+    tag:'Science', featured:false, published:true, date:'2024-04-01',
+    excerpt:'Warming seas, human impact, and cautious recovery — a deep dive into the data and what it means for our reefs.',
+    content:`## Understanding Mauritius's Coral Reefs
+
+Divers familiar with the Caribbean or Red Sea may notice that Mauritius's reefs appear less densely coral-covered. Understanding why requires looking at recent history.
+
+### The 1998 Bleaching Event
+
+The El Niño event of 1998 caused catastrophic coral bleaching across the Indian Ocean. Sea surface temperatures rose 3°C above normal for several weeks — long enough to trigger mass bleaching. Mauritius lost an estimated 30–50% of coral cover in that single event. Many reefs have been recovering slowly ever since.
+
+### Crown-of-Thorns Starfish
+
+*Acanthaster planci* periodically explodes in population and consumes live coral tissue at alarming rates. Outbreaks in the 1980s and 2000s compounded the damage from bleaching events.
+
+### Sedimentation
+
+Coastal development, dredging, and agricultural runoff increase turbidity. Corals require clear water for their symbiotic algae to photosynthesise effectively.
+
+### Signs of Recovery
+
+Many sites around Mauritius show genuine recovery — new coral recruits are visible, fish populations are increasing in protected areas, and coral diversity is slowly returning where conditions allow.
+
+Our **Marine Ecology** and **Coral Identification** specialty courses are designed to help you understand what you're seeing — and become an informed advocate for reef protection.`
+  }
+];
+
+/* ── Storage helpers ── */
+function getAllPosts() {
+  try { return JSON.parse(localStorage.getItem(POSTS_KEY) || '[]'); } catch { return []; }
+}
+function getPublishedPosts() {
+  return getAllPosts().filter(p => p.published).sort((a,b) => new Date(b.date)-new Date(a.date));
+}
+
+/* ── Seed on first visit ── */
+if (!localStorage.getItem(SEEDED_KEY)) {
+  localStorage.setItem(POSTS_KEY, JSON.stringify(SEED_POSTS));
+  localStorage.setItem(SEEDED_KEY, '1');
+}
+
+/* ── Escape helper ── */
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(d) {
+  try { return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}); }
+  catch { return d||''; }
+}
+
+/* ── Render blog grid ── */
+function renderBlog() {
+  const posts = getPublishedPosts();
+  const grid  = document.getElementById('blogGrid');
+  if (!grid) return;
+
+  if (posts.length === 0) {
+    grid.innerHTML = '<div class="blog-empty" style="grid-column:1/-1">No posts published yet.</div>';
+    return;
+  }
+
+  const heroIdx = posts.findIndex(p => p.featured);
+  const hero    = heroIdx >= 0 ? posts[heroIdx] : posts[0];
+  const rest    = posts.filter(p => p.id !== hero.id).slice(0, 5);
+
+  const arrow = `<svg width="14" height="8" viewBox="0 0 14 8" fill="none"><path d="M1 4H13M9 1L13 4L9 7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  let html = `
+    <div class="post hero-post reveal" onclick="openPost('${escHtml(hero.id)}')">
+      <p class="post-tag">${escHtml(hero.tag)}</p>
+      <h3>${escHtml(hero.title)}</h3>
+      <p>${escHtml(hero.excerpt)}</p>
+      <span class="post-link">Read more ${arrow}</span>
+    </div>`;
+
+  for (const p of rest) {
+    html += `
+      <div class="post reveal" onclick="openPost('${escHtml(p.id)}')">
+        <p class="post-tag">${escHtml(p.tag)}</p>
+        <h3>${escHtml(p.title)}</h3>
+        <p>${escHtml(p.excerpt)}</p>
+        <span class="post-link">Read more ${arrow}</span>
+      </div>`;
+  }
+
+  grid.innerHTML = html;
+  grid.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+}
+
+/* ── Open post modal ── */
+function openPost(id) {
+  const post = getAllPosts().find(p => p.id === id);
+  if (!post) return;
+
+  document.getElementById('modalTag').textContent   = post.tag;
+  document.getElementById('modalTitle').textContent = post.title;
+
+  const words   = (post.content || '').split(/\s+/).filter(Boolean).length;
+  const readMin = Math.max(1, Math.round(words / 200));
+  document.getElementById('modalMeta').textContent  =
+    fmtDate(post.date) + '  ·  ' + readMin + ' min read';
+
+  const raw  = (typeof marked !== 'undefined') ? marked.parse(post.content || '') : `<p>${escHtml(post.content)}</p>`;
+  const safe = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(raw) : raw;
+  document.getElementById('modalBody').innerHTML = safe;
+
+  const modal = document.getElementById('postModal');
+  modal.classList.add('open');
+  modal.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+
+function closePost() {
+  document.getElementById('postModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closePostBackdrop(e) {
+  if (e.target === document.getElementById('postModal')) closePost();
+}
+
+/* ── Boot ── */
+renderBlog();
+
+/* ════════════════════════════════════════
+   ONLINE BOOKING
+════════════════════════════════════════ */
+(function () {
+  let currentStep = 1;
+  let selectedSvc = '';
+
+  /* Set today as minimum date */
+  const dateInput = document.getElementById('bDate');
+  if (dateInput) {
+    const today = new Date();
+    today.setDate(today.getDate() + 1); /* earliest = tomorrow */
+    dateInput.min = today.toISOString().split('T')[0];
+  }
+
+  /* Service selection */
+  window.selectSvc = function (btn, name) {
+    document.querySelectorAll('.svc-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    selectedSvc = name;
+    document.getElementById('svcNext').disabled = false;
+  };
+
+  /* People counter */
+  window.changePeople = function (delta) {
+    const inp = document.getElementById('bPeople');
+    const v   = Math.min(Math.max((parseInt(inp.value) || 1) + delta, 1), 20);
+    inp.value = v;
+  };
+
+  /* Step navigation */
+  window.goStep = function (step) {
+    const err = document.getElementById('bookErr');
+    err.style.display = 'none';
+
+    /* Validate before advancing */
+    if (step > currentStep) {
+      if (currentStep === 1 && !selectedSvc) {
+        showErr('Please choose an activity to continue.'); return;
+      }
+      if (currentStep === 2) {
+        const d = document.getElementById('bDate').value;
+        if (!d) { showErr('Please choose a preferred date.'); return; }
+      }
+      if (currentStep === 3) {
+        const name  = document.getElementById('bName').value.trim();
+        const email = document.getElementById('bEmail').value.trim();
+        if (!name)  { showErr('Please enter your name.'); return; }
+        if (!email || !email.includes('@')) { showErr('Please enter a valid email address.'); return; }
+      }
+      if (step === 4) buildSummary();
+    }
+
+    /* Update UI */
+    document.querySelectorAll('.book-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('bStep' + step).classList.add('active');
+
+    /* Update step dots */
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.getElementById('sd' + i);
+      const lbl = document.getElementById('sl' + i);
+      if (!dot) continue;
+      dot.classList.remove('active', 'done');
+      lbl.classList.remove('active');
+      if (i < step)       { dot.classList.add('done'); dot.textContent = '✓'; }
+      else if (i === step) { dot.classList.add('active'); dot.textContent = i; lbl.classList.add('active'); }
+      else                 { dot.textContent = i; }
+    }
+
+    currentStep = step;
+    document.getElementById('book').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  function showErr(msg) {
+    const el = document.getElementById('bookErr');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function fmtDate(str) {
+    if (!str) return '—';
+    try { return new Date(str + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' }); }
+    catch { return str; }
+  }
+
+  function buildSummary() {
+    const rows = [
+      ['Activity',    selectedSvc],
+      ['Date',        fmtDate(document.getElementById('bDate').value)],
+      ['Time',        document.getElementById('bTime').value],
+      ['People',      document.getElementById('bPeople').value],
+      ['Experience',  document.getElementById('bExp').value],
+      ['Name',        document.getElementById('bName').value],
+      ['Email',       document.getElementById('bEmail').value],
+      ['Phone',       document.getElementById('bPhone').value || '—'],
+    ];
+    const notes = document.getElementById('bNotes').value.trim();
+    if (notes) rows.push(['Notes', notes]);
+
+    document.getElementById('bookSummary').innerHTML =
+      rows.map(([k,v]) => `<div class="book-confirm-row"><span class="book-confirm-key">${k}</span><span class="book-confirm-val">${escH(v)}</span></div>`).join('');
+  }
+
+  function escH(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* Submit */
+  window.submitBooking = async function () {
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    const payload = {
+      service:    selectedSvc,
+      date:       fmtDate(document.getElementById('bDate').value),
+      time:       document.getElementById('bTime').value,
+      people:     document.getElementById('bPeople').value,
+      experience: document.getElementById('bExp').value,
+      name:       document.getElementById('bName').value.trim(),
+      email:      document.getElementById('bEmail').value.trim(),
+      phone:      document.getElementById('bPhone').value.trim(),
+      notes:      document.getElementById('bNotes').value.trim(),
+    };
+
+    try {
+      const res  = await fetch('/api/book', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Server error');
+
+      /* Success */
+      document.getElementById('bookRefDisplay').textContent = 'Ref: ' + data.ref;
+      document.querySelectorAll('.book-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('bStep5').classList.add('active');
+      document.getElementById('bookSteps').style.display = 'none';
+
+    } catch (err) {
+      showErr('Something went wrong — please try again or call us directly.');
+      btn.disabled = false;
+      btn.innerHTML = 'Confirm Booking <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 5H13M9 1L13 5L9 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+  };
+})();
+</script>
+</body>
+</html>
